@@ -31,11 +31,26 @@ Two coordinated systems share the page:
 - Helper builders `branch(...)` and `booth(...)` generate repeated subtrees — edit these to change every branch/booth at once rather than hand-writing each node.
 - On load, an `index()` pass populates `byId`, `parentOf`, and `personIndex` (the last groups nodes by the same real person, e.g. `BOOK`, to draw the "คนเดียวกัน" / same-person link).
 - `nodeEl(node, depth)` recursively builds the DOM. `select(id)` highlights the node, its ancestor path (`.onpath`), and same-person nodes, then `renderDetail()` fills the side panel.
-- The two `axis` values drive color coding throughout (role = red, location = orange) via `.axis-role` / `.axis-location` and `mk-*` / `n-mark` classes.
+- The two `axis` values drive color coding throughout (role/คน = red, location/สถานที่ = **purple**) via `.axis-role` / `.axis-location` and `mk-*` / `n-mark` classes.
 
 ## Conventions when editing
 
 - **Keep it one file, zero dependencies** — no bundler, no npm, no framework. Match the existing vanilla-JS / hand-written-CSS style.
 - To change the org chart, edit the `TREE` data object (and `branch`/`booth` builders), not the generated DOM.
-- When adding or reordering slides, update both the `.pres-slide` markup and `slideTitles[]`.
-- Screenshots referenced by the slides live in `images/` (`1.png`–`5.png`).
+- When adding or reordering slides, update **all four** in lockstep: the `.pres-slide` markup, its `.sb-item[data-slide]` button, `slideTitles[]`, and the `data-index` attribute (cosmetic but keep tidy).
+- **Slide-index invariant:** the Nth `.sb-item` button must have `data-slide="N"` and point to the Nth `.pres-slide` in DOM order. Clicks use the `data-slide` attribute; the scroll-spy highlight uses positional `slides.indexOf(...)` — both must agree.
+- Screenshots referenced by the slides live in `images/` (`1.png`–`6.png`, plus `3.5.png`).
+- Keep emoji minimal — `✓` for feat-list items; the only intentional emoji are the four app-tile icons on the last slide.
+
+## Working notes (read this to go faster)
+
+- **Reply in Thai** — the user works in Thai.
+- **Don't use `preview_screenshot`** — it hangs (~30s timeout) in this environment. Verify changes with `preview_eval` instead: read DOM geometry (`getBoundingClientRect`), computed styles (`getComputedStyle`), counts, and class state. That's how every change this far was confirmed.
+- **Bias to action.** Edits here are one cheap, reversible file. Make the change and report it, offering to revert — only stop to ask when a choice is genuinely ambiguous *and* costly to undo.
+
+## Quick reference
+
+- **Palette:** role/คน = `--red` · location/สถานที่ = `--orange` (variable name kept, but the value is **purple** `#7a4dd0`) · device = `--teal` · brand = `--accent` (blue) · person/guard = `--gold`.
+- **Colors live in `:root`** (top of the `<style>` block); changing a variable recolors everywhere.
+- **Example Code/Checksum pairs threaded through the deck:** group `GRP-LH-0001` / `7F3A` (Step 2) · role `GC-FPA000-2375B` / `9C2D` (Step 3 → reused in Step 3.5) · action `ACT-GATE-01` / `B1E0` (Step 4). Keep the role pair identical across Step 3 and 3.5.
+- **Reusable slide components:** `.feat-list` (✓ items), `.code-callout` (dark box with `.cc-code` + green `.cc-sum` checksum chip), `.flow-chips`, `.guard-note` / `.sync-note` (tip boxes), `.slide-shot` (screenshot + caption).
