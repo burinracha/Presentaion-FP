@@ -1,654 +1,1032 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="light">
+<html lang="th">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ระบบ Visitor Management — ภาพรวมบทบาทและหน้าที่</title>
+<title>ระบบ Visitor Management — ขั้นตอนการตั้งค่า</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   THEME TOKENS  (ทุกสีเป็นตัวแปร — ปรับ/ย้อนกลับได้ง่าย)
-   legend: คน = แดง · สถานที่ = ส้ม · อุปกรณ์ = เขียวอมฟ้า
-   brand chrome (sidebar/hero/ปุ่ม) = น้ำเงิน/ทอง Land & House
+   DESIGN TOKENS — 9arm-inspired presentation
    ============================================================ */
-:root{
-  --bg:#f3f7fc;
-  --dot:rgba(11,77,162,.07);
-  --surface:#ffffff;
-  --surface-2:#eef4fb;
-  --ink:#0f2238;
-  --ink-soft:#54657d;
-  --ink-faint:#8395ab;
-  --line:#dce5f1;
-  --line-strong:#c3d3e8;
-
-  --brand:#0b4da2;
-  --brand-700:#083a7d;
-  --brand-100:#e3edfb;
-  --gold:#e0a93b;
-
-  --axis-role:#d14b45;     --axis-role-bg:#fbeae8;   --axis-role-ink:#b2362f;
-  --axis-loc:#e08a2b;      --axis-loc-bg:#fcefda;    --axis-loc-ink:#a6661a;
-  --axis-device:#138a7d;   --axis-device-bg:#e1f3f0; --axis-device-ink:#0c6b61;
-
-  --danger:#c0392b;
-  --shadow-sm:0 1px 2px rgba(15,34,56,.06), 0 1px 3px rgba(15,34,56,.08);
-  --shadow-md:0 6px 18px rgba(15,34,56,.08), 0 2px 6px rgba(15,34,56,.06);
-  --shadow-lg:0 18px 50px rgba(11,77,162,.14);
-  --radius:16px;
-  --sidebar-w:264px;
+:root {
+  --bg: #f4f3ef;
+  --paper: #ffffff;
+  --ink: #1a1a18;
+  --ink-soft: #5c5c55;
+  --ink-faint: #9e9e94;
+  --rule: #e2e0da;
+  --rule-strong: #c8c6c0;
+  --accent: #1a65c9;
+  --accent-hot: #0f4a9a;
+  --accent-bg: #e6eefb;
+  --gold: #c98a08;
+  --gold-bg: #fdf5de;
+  --teal: #0a8570;
+  --teal-bg: #e0f5f0;
+  --red: #d44638;
+  --red-bg: #fde8e5;
+  /* location axis — purple, kept distinct from the red role axis */
+  --orange: #7a4dd0;
+  --orange-bg: #ece4fb;
+  --purple: #7c4dba;
+  --purple-bg: #f1ecf9;
+  --font-thai: "IBM Plex Sans Thai", "Sarabun", sans-serif;
+  --font-display: "Kanit", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --sidebar-w: 260px;
+  --topbar-h: 48px;
 }
 
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  font-family:"IBM Plex Sans Thai","Sarabun",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  color:var(--ink);
-  background-color:var(--bg);
-  background-image:radial-gradient(var(--dot) 1.2px, transparent 1.2px);
-  background-size:24px 24px;
-  line-height:1.6;
-  -webkit-font-smoothing:antialiased;
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; margin: 0; }
+body {
+  font-family: var(--font-thai);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
-h1,h2,h3,h4,.kanit{font-family:"Kanit",sans-serif;font-weight:600;letter-spacing:.2px}
-button{font-family:inherit}
-
-/* colored marker square (แทน emoji) */
-.mk{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;flex:none}
-.mk-role{background:var(--axis-role)}
-.mk-location{background:var(--axis-loc)}
-.mk-device{background:var(--axis-device)}
-.mk-gold{background:var(--gold)}
-.mk-brand{background:var(--brand)}
-
-#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--brand),var(--gold));z-index:60;transition:width .1s linear}
-
-/* ============================================================ SIDEBAR */
-.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:50;transition:transform .28s ease}
-.brand{display:flex;align-items:center;gap:11px;padding:20px 20px 16px;border-bottom:1px solid var(--line)}
-.brand .logo{width:42px;height:42px;border-radius:11px;flex:none;background:linear-gradient(135deg,var(--brand),var(--brand-700));color:#fff;display:grid;place-items:center;font-family:"Kanit";font-weight:700;font-size:14px;letter-spacing:.5px;box-shadow:var(--shadow-sm)}
-.brand .b-title{font-family:"Kanit";font-weight:700;font-size:15px;line-height:1.15}
-.brand .b-sub{font-size:11px;color:var(--ink-faint);letter-spacing:.4px}
-.nav{padding:14px 12px;overflow-y:auto;flex:1}
-.nav-label{font-size:11px;letter-spacing:1px;color:var(--ink-faint);text-transform:uppercase;margin:10px 10px 6px;font-weight:600}
-.nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;text-decoration:none;color:var(--ink-soft);font-size:14px;font-weight:500;transition:background .15s,color .15s}
-.nav a .num{font-family:"Kanit";font-size:12px;color:var(--ink-faint);width:22px;font-weight:600}
-.nav a:hover{background:var(--surface-2);color:var(--ink)}
-.nav a.active{background:var(--brand-100);color:var(--brand-700)}
-.nav a.active .num{color:var(--brand)}
-.nav a.soon{opacity:.5;cursor:not-allowed}
-.nav a.soon::after{content:"เร็ว ๆ นี้";margin-left:auto;font-size:10px;background:var(--surface-2);color:var(--ink-faint);padding:2px 7px;border-radius:999px;font-family:"Kanit"}
-.sidebar-foot{padding:12px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-faint)}
-
-/* ============================================================ MAIN/SECTIONS */
-.main{margin-left:var(--sidebar-w);min-height:100vh;transition:margin-left .28s ease}
-@media (min-width:861px){
-  body.nav-collapsed .sidebar{transform:translateX(-100%)}
-  body.nav-collapsed .main{margin-left:0}
-  body.nav-collapsed .navbar{left:50%}
-}
-.section{padding:84px clamp(20px,5vw,72px) 96px;max-width:1180px}
-.section + .section{border-top:1px solid var(--line)}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:"Kanit";font-weight:600;font-size:12.5px;letter-spacing:1.5px;color:var(--brand);text-transform:uppercase;margin-bottom:14px}
-.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--gold)}
-.section h2{font-size:clamp(26px,3.4vw,40px);line-height:1.18;margin:0 0 14px}
-.lead{font-size:clamp(15px,1.5vw,18px);color:var(--ink-soft);max-width:64ch;margin:0 0 8px}
-.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
-.reveal.in{opacity:1;transform:none}
-
-/* ============================================================ HERO */
-#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative}
-.hero-kicker{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);padding:7px 16px;border-radius:999px;font-size:13px;color:var(--ink-soft);box-shadow:var(--shadow-sm);width:fit-content;margin-bottom:26px;font-weight:500}
-.hero-kicker b{color:var(--brand-700);font-weight:600}
-#hero h1{font-size:clamp(34px,6vw,68px);line-height:1.08;margin:0 0 22px;max-width:16ch}
-#hero h1 .hl{color:var(--brand);position:relative;white-space:nowrap}
-#hero h1 .hl::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:14px;background:var(--gold);opacity:.28;z-index:-1;border-radius:4px}
-.hero-sub{font-size:clamp(16px,1.8vw,20px);color:var(--ink-soft);max-width:62ch;margin:0 0 34px}
-.hero-chips{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:46px}
-.axis-chip{display:inline-flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);padding:9px 16px 9px 12px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow-sm)}
-.axis-chip .swatch{width:12px;height:12px;border-radius:3px;flex:none}
-.scroll-cue{display:flex;align-items:center;gap:12px;color:var(--ink-faint);font-size:13px;font-weight:500}
-.scroll-cue .mouse{width:22px;height:34px;border:2px solid var(--line-strong);border-radius:12px;position:relative}
-.scroll-cue .mouse::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;border-radius:2px;background:var(--brand);transform:translateX(-50%);animation:wheel 1.6s infinite}
-@keyframes wheel{0%{opacity:0;transform:translate(-50%,0)}40%{opacity:1}80%{opacity:0;transform:translate(-50%,9px)}}
-
-
-
-/* ============================================================ MAP (02) */
-.map-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:26px 0 4px;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-sm)}
-.map-legend .li{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:var(--ink-soft)}
-.map-legend .li .mk{width:13px;height:13px}
-.map-legend .li b{color:var(--ink);font-family:"Kanit";font-weight:600}
-.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:18px 0 20px}
-.toolbar .tb-label{font-size:13px;color:var(--ink-faint);font-weight:600;margin-right:2px}
-.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:4px;gap:3px;box-shadow:var(--shadow-sm)}
-.seg button{border:none;background:transparent;padding:7px 13px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
-.seg button .sw{width:9px;height:9px;border-radius:2px}
-.seg button:hover{color:var(--ink)}
-.seg button.on{color:#fff;background:var(--brand)}
-.tb-spacer{flex:1 1 auto}
-.tb-btn{border:1px solid var(--line);background:var(--surface);cursor:pointer;padding:8px 14px;border-radius:10px;font-family:"Kanit";font-weight:600;font-size:13px;color:var(--ink-soft);box-shadow:var(--shadow-sm);transition:all .15s}
-.tb-btn:hover{color:var(--brand);border-color:var(--line-strong)}
-
-.map-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:26px;align-items:start}
-.tree-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px;box-shadow:var(--shadow-sm);overflow-x:auto}
-.tree-hint{font-size:12.5px;color:var(--ink-faint);margin:0 0 14px;display:flex;align-items:center;gap:8px}
-
-ul.tree,ul.tree ul{list-style:none;margin:0;padding:0}
-ul.tree ul{margin-left:9px}
-.tree li{position:relative;padding:3px 0 3px 22px}
-.tree li::before{content:"";position:absolute;left:8px;top:0;height:100%;border-left:2px solid var(--line-strong)}
-.tree li::after{content:"";position:absolute;left:8px;top:21px;width:13px;border-top:2px solid var(--line-strong)}
-.tree li:last-child::before{height:21px}
-.tree>li{padding-left:0}
-.tree>li::before,.tree>li::after{display:none}
-.tree li.onpath::before,.tree li.onpath::after{border-color:var(--brand)}
-.tree li.collapsed > ul{display:none}
-
-.node-row{display:flex;align-items:center;gap:5px}
-.caret{width:18px;height:18px;border:none;background:transparent;cursor:pointer;position:relative;padding:0;flex:none;border-radius:5px}
-.caret:hover{background:var(--surface-2)}
-.caret::before{content:"";position:absolute;left:6px;top:5px;width:6px;height:6px;border-right:2px solid var(--ink-faint);border-bottom:2px solid var(--ink-faint);transform:rotate(-45deg);transition:transform .15s}
-.tree li:not(.collapsed) > .node-row > .caret::before{transform:rotate(45deg)}
-.caret-spacer{width:18px;flex:none}
-
-.node-btn{position:relative;display:inline-flex;flex-direction:column;align-items:flex-start;gap:0;background:var(--surface);border:1.5px solid var(--line);border-left-width:4px;border-radius:9px;padding:7px 12px;cursor:pointer;text-align:left;transition:all .16s;max-width:100%;box-shadow:var(--shadow-sm)}
-.node-btn:hover{border-color:var(--line-strong);transform:translateX(2px)}
-.node-main{display:flex;align-items:center;gap:9px}
-.node-btn .n-mark{width:13px;height:13px;border-radius:3px;flex:none}
-.node-btn .n-name{font-family:"Kanit";font-weight:600;font-size:14px;line-height:1.2;display:block;white-space:nowrap}
-.node-btn .n-en{font-size:10px;letter-spacing:.6px;color:var(--ink-faint);text-transform:uppercase;display:block;white-space:nowrap}
-.node-devs{display:inline-flex;gap:5px;margin-top:6px;margin-left:22px}
-.node-dev{font-size:9.5px;font-weight:700;letter-spacing:.3px;background:var(--axis-device-bg);color:var(--axis-device-ink);padding:3px 7px;border-radius:6px;font-family:"Kanit";white-space:nowrap}
-
-.axis-role  >.node-row>.node-btn{border-left-color:var(--axis-role)}
-.axis-location>.node-row>.node-btn{border-left-color:var(--axis-loc)}
-
-/* selected / path / person highlight (3 ระบบ ต้องแยกกันชัด) */
-.tree li.onpath>.node-row>.node-btn{border-color:var(--brand);box-shadow:0 2px 8px rgba(11,77,162,.14)}
-.tree li.selected>.node-row>.node-btn{background:var(--brand);border-color:var(--brand);box-shadow:var(--shadow-md)}
-.tree li.selected>.node-row>.node-btn .n-name{color:#fff}
-.tree li.selected>.node-row>.node-btn .n-en{color:rgba(255,255,255,.78)}
-.tree li.person-link>.node-row>.node-btn{outline:2px dashed var(--gold);outline-offset:2px}
-.tree li.person-link>.node-row>.node-btn::after{content:"คนเดียวกัน";position:absolute;top:-9px;right:-6px;background:var(--gold);color:#3d2b00;font-family:"Kanit";font-weight:700;font-size:9px;padding:2px 7px;border-radius:999px;white-space:nowrap}
-
-/* guard focus marker */
-.is-guard>.node-row>.node-btn{border-color:var(--gold)}
-.is-guard>.node-row>.node-btn .n-mark{box-shadow:0 0 0 2px var(--gold)}
-
-/* axis emphasis dimming */
-.map[data-emph="role"]     li:not(.axis-role)     >.node-row>.node-btn,
-.map[data-emph="location"] li:not(.axis-location) >.node-row>.node-btn,
-.map[data-emph="device"]   li:not(.has-device)    >.node-row>.node-btn{opacity:.3;filter:grayscale(.35)}
-
-/* detail panel */
-.detail{position:sticky;top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-md);overflow:hidden}
-.detail-empty{padding:44px 28px;text-align:center;color:var(--ink-faint)}
-.detail-empty .arr{font-family:"Kanit";font-weight:700;font-size:15px;color:var(--ink-soft);margin-bottom:8px}
-.d-head{padding:22px 24px;color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-700));position:relative}
-.d-head.role{background:linear-gradient(135deg,#d14b45,#a83830)}
-.d-head.location{background:linear-gradient(135deg,#e08a2b,#b06616)}
-.d-head h3{font-size:21px;margin:0;color:#fff}
-.d-head .d-en{font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.85;margin-top:3px}
-.d-head .d-axisbadge{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.22);font-family:"Kanit";font-weight:600;font-size:11px;padding:5px 12px;border-radius:999px}
-.d-body{padding:20px 24px 26px}
-.d-block{margin-bottom:20px}
-.d-block:last-child{margin-bottom:0}
-.d-block .lbl{font-family:"Kanit";font-weight:600;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px;display:flex;align-items:center;gap:8px}
-.d-desc{font-size:14.5px;color:var(--ink-soft);margin:0}
-.breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-.breadcrumb .bc{background:var(--axis-loc-bg);color:var(--axis-loc-ink);padding:5px 11px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:"Kanit"}
-.breadcrumb .sep{color:var(--ink-faint)}
-.reports{display:inline-flex;align-items:center;gap:9px;background:var(--axis-role-bg);color:var(--axis-role-ink);padding:8px 14px;border-radius:10px;font-size:13.5px;font-weight:600;font-family:"Kanit"}
-.person-box{background:#fff9ed;border:1px solid var(--gold);border-radius:12px;padding:14px 16px}
-.person-box .pt{font-size:13.5px;color:#7a5a13;margin:0 0 10px}
-.person-box .pt b{font-family:"Kanit";font-size:15px;color:#5c4410}
-.mini-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
-.mini-list li{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:var(--ink)}
-.duty-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
-.duty-list li{display:flex;gap:11px;align-items:flex-start;font-size:14px;background:var(--surface-2);border:1px solid var(--line);padding:11px 14px;border-radius:11px}
-.duty-list li .chk{width:21px;height:21px;border-radius:6px;background:var(--brand);flex:none;margin-top:1px;position:relative}
-.duty-list li .chk::after{content:"";position:absolute;left:7px;top:4px;width:4px;height:8px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg)}
-.duty-list li.extra{border-color:var(--gold);background:#fff9ed}
-.duty-list li.extra .chk{background:var(--gold)}
-.duty-list li .extra-tag{margin-left:auto;font-family:"Kanit";font-weight:700;font-size:10px;color:#a6781a;background:#fff;border:1px solid var(--gold);padding:2px 7px;border-radius:999px;align-self:center;white-space:nowrap}
-.dev-chips{display:flex;flex-wrap:wrap;gap:9px}
-.dev-chip{display:inline-flex;align-items:center;gap:8px;background:var(--axis-device-bg);color:var(--axis-device-ink);border:1px solid #c6e6e0;padding:8px 13px;border-radius:10px;font-s.roadmap .r .soon{font-size:10px;font-family:"Kanit";color:var(--ink-faint);background:#fff;border:1px solid var(--line);padding:1px 7px;border-radius:999px}
 
 /* ============================================================
-   SETUP STEPS (section 03)
+   LAYOUT — fixed sidebar + stage
    ============================================================ */
-.steps{margin-top:40px;position:relative}
-.step{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 22px;position:relative;padding-bottom:34px}
-.step:last-child{padding-bottom:0}
-/* vertical rail */
-.step .rail{position:relative;display:flex;flex-direction:column;align-items:center}
-.step .badge{width:54px;height:54px;border-radius:16px;flex:none;display:grid;place-items:center;
-  font-family:"Kanit";font-weight:700;font-size:17px;color:#fff;z-index:2;box-shadow:var(--shadow-md);
-  background:linear-gradient(135deg,var(--brand),var(--brand-700))}
-.step.half .badge{background:linear-gradient(135deg,var(--axis-loc),#0c6f67)}
-.step.final .badge{background:linear-gradient(135deg,var(--gold),#b9821f);color:#3d2b00}
-.step .line{position:absolute;top:54px;bottom:-34px;width:3px;background:var(--line-strong);border-radius:2px;z-index:1}
-.step:last-child .line{display:none}
+.pres-layout {
+  display: flex;
+  height: 100vh;
+}
 
-.step-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow-sm);overflow:hidden;transition:transform .2s,box-shadow .2s}
-.step-card:hover{box-shadow:var(--shadow-md)}
-.step-head{padding:20px 24px 4px}
-.step-tag{display:inline-flex;align-items:center;gap:8px;font-family:"Kanit";font-weight:600;font-size:11.5px;
-  letter-spacing:1px;text-transform:uppercase;color:var(--brand);background:var(--brand-100);
-  padding:4px 11px;border-radius:999px;margin-bottom:11px}
-.step.half .step-tag{color:var(--axis-loc);background:var(--axis-loc-bg)}
-.step.final .step-tag{color:var(--axis-device);background:var(--axis-device-bg)}
-.step-head h3{font-size:clamp(19px,2.3vw,24px);margin:0 0 8px;line-height:1.25}
-.step-head p{font-size:14.5px;color:var(--ink-soft);margin:0 0 4px;max-width:64ch}
-.step-head p .hl{color:var(--brand-700);font-weight:600}
-.step-body{padding:14px 24px 24px}
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.pres-sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--paper);
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transition: transform .3s ease, margin .3s ease;
+  z-index: 20;
+}
+.pres-sidebar.collapsed {
+  transform: translateX(calc(-1 * var(--sidebar-w)));
+  margin-right: calc(-1 * var(--sidebar-w));
+}
 
-/* mini feature rows inside a step */
-.step-points{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
-.step-points li{display:flex;gap:11px;align-items:flex-start;font-size:14px;color:var(--ink-soft)}
-.step-points li .pi{width:22px;height:22px;border-radius:7px;background:var(--surface-2);color:var(--brand);
-  display:grid;place-items:center;font-size:12px;flex:none;margin-top:1px;font-weight:700}
-.step-points li b{color:var(--ink);font-weight:600}
+.sb-brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.sb-brand .logo {
+  width: 36px; height: 36px; border-radius: 9px; flex: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hot));
+  color: #fff; display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 12px;
+  letter-spacing: .5px;
+}
+.sb-brand .b-name {
+  font-family: var(--font-display); font-weight: 700; font-size: 14px;
+  line-height: 1.15;
+}
+.sb-brand .b-sub {
+  font-size: 10px; color: var(--ink-faint); letter-spacing: .4px;
+}
 
-/* group flow chips (step 2) */
-.flowline{display:flex;align-items:center;flex-wrap:wrap;gap:10px 8px;margin-top:16px}
-.flowline .grp{display:inline-flex;align-items:center;gap:9px;background:var(--axis-loc-bg);color:var(--axis-loc);
-  border:1px solid #bfe6e0;font-family:"Kanit";font-weight:700;font-size:14px;padding:9px 15px;border-radius:11px}
-.flowline .arrow{color:var(--ink-faint);font-size:16px}
-.flowline .branch{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);
-  font-family:"Kanit";font-weight:600;font-size:13.5px;padding:8px 13px;border-radius:10px;box-shadow:var(--shadow-sm)}
-.flowline .branch .dotg{width:8px;height:8px;border-radius:50%;background:var(--axis-loc)}
+.sb-chapter {
+  font-family: var(--font-display); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--accent); padding: 18px 18px 6px;
+}
 
-/* code-output callout (step 3) */
-.code-out{margin-top:16px;background:#0f2238;color:#dfeaf7;border-radius:13px;padding:16px 18px;
-  display:flex;flex-wrap:wrap;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
-.code-out .co-ic{font-size:22px}
-.code-out .co-txt{font-size:13.5px;color:#aebfd4;flex:1;min-width:180px}
-.code-out .co-code{font-family:"Kanit";font-weight:700;font-size:15px;letter-spacing:.5px;color:#fff;
-  background:rgba(255,255,255,.12);border:1px dashed rgba(255,255,255,.35);padding:7px 14px;border-radius:9px}
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 18px; cursor: pointer; border: none; background: none;
+  width: 100%; text-align: left;
+  font-family: var(--font-thai); font-size: 13px; font-weight: 500;
+  color: var(--ink-soft);
+  border-left: 3px solid transparent;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.sb-item:hover { background: var(--bg); color: var(--ink); }
+.sb-item.active {
+  background: var(--accent-bg); color: var(--accent);
+  border-left-color: var(--accent); font-weight: 600;
+}
+.sb-item .sn {
+  font-family: var(--font-display); font-weight: 700; font-style: italic;
+  font-size: 14px; color: var(--accent); min-width: 24px;
+}
+.sb-item.active .sn { color: var(--accent-hot); }
 
-/* screenshot slot with graceful fallback */
-.shot{margin-top:16px;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--surface-2);position:relative}
-.shot img{display:block;width:100%;height:auto}
-.shot-cap{font-size:12px;color:var(--ink-faint);padding:9px 14px;border-top:1px solid var(--line);background:var(--surface);
-  display:flex;align-items:center;gap:8px}
-.shot-cap::before{content:"🖼️";font-size:13px}
-.shot-ph{display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  padding:40px 24px;text-align:center;color:var(--ink-faint)}
-.shot-ph .pic{font-size:34px;opacity:.5}
-.shot-ph .pt{font-size:13.5px;max-width:42ch;line-height:1.5}
-.shot-ph code{font-family:"Kanit";font-weight:600;background:#fff;border:1px solid var(--line);
-  color:var(--brand-700);padding:3px 9px;border-radius:7px;font-size:12.5px;word-break:break-all}
-.shot.noimg img{display:none}
-.shot.noimg .shot-cap{display:none}
-.shot.noimg .shot-ph{display:flex}
-.shot.noimg{border-style:dashed;border-color:var(--line-strong)}
+.sb-foot {
+  margin-top: auto; padding: 12px 18px;
+  border-top: 1px solid var(--rule);
+  font-size: 10px; color: var(--ink-faint);
+}
 
-/* phone mockup (step 5 — guard app) */
-.appstore{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-@media (max-width:520px){.appstore{grid-template-columns:1fr}}
-.app-tile{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);
-  border-radius:13px;padding:13px 15px;box-shadow:var(--shadow-sm)}
-.app-tile .ti{width:46px;height:46px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:23px;
-  background:var(--brand-100);color:var(--brand)}
-.app-tile .tinfo{flex:1;min-width:0}
-.app-tile .tname{font-family:"Kanit";font-weight:600;font-size:14.5px;line-height:1.2}
-.app-tile .tsub{font-size:12px;color:var(--ink-faint);margin-top:2px}
-.app-tile .get{font-family:"Kanit";font-weight:700;font-size:12px;color:var(--brand);
-  background:var(--brand-100);border:none;border-radius:999px;padding:7px 16px;white-space:nowrap}
-.app-tile.locked{opacity:.5}
-.app-tile.locked .ti{background:var(--surface-2);color:var(--ink-faint)}
-.app-tile.locked .get{color:var(--ink-faint);background:var(--surface-2)}
-.synced-note{margin-top:14px;background:#fff9ed;border:1px solid var(--gold);border-radius:12px;
-  padding:13px 16px;display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:#7a5a13}
-.synced-note .si{font-size:19px;line-height:1}
+/* ============================================================
+   STAGE (topbar + slides)
+   ============================================================ */
+.pres-stage {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; position: relative;
+}
 
-@media (max-width:620px){
-  .step{grid-template-columns:46px minmax(0,1fr);gap:6px 14px}
-  .step .badge{width:44px;height:44px;font-size:14px;border-radius:13px}
-  .step .line{top:44px}
-}s:center;gap:8px;background:var(--surface-2);color:var(--ink-soft);padding:8px 14px;border-radius:10px;font-size:13px;font-weight:500}
-.roadmap .r .soon{font-size:10px;font-family:"Kanit";color:var(--ink-faint);background:#fff;border:1px solid var(--line);padding:1px 7px;border-radius:999px}
+.pres-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  height: var(--topbar-h); min-height: var(--topbar-h); flex: none;
+}
+.tb-left { display: flex; align-items: center; gap: 12px; }
+.tb-right { display: flex; align-items: center; gap: 8px; }
 
-/* ============================================================ PREV/NEXT */
-.navbar{position:fixed;bottom:22px;left:calc(var(--sidebar-w) + 50%);transform:translateX(-50%);background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:6px;padding:6px;z-index:40;max-width:90vw;transition:left .28s ease}
-.navbar button{border:none;background:transparent;cursor:pointer;border-radius:999px;padding:9px 16px;font-family:"Kanit";font-weight:600;font-size:13.5px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:8px;transition:background .15s,color .15s}
-.navbar button:hover:not(:disabled){background:var(--surface-2);color:var(--brand)}
-.navbar button:disabled{opacity:.32;cursor:default}
-.navbar .cur{font-size:13px;color:var(--ink-faint);min-width:130px;text-align:center;font-weight:500;padding:0 4px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.tb-toggle {
+  background: none; border: 1px solid var(--ink); color: var(--ink);
+  font-family: var(--font-thai); font-size: 13px; font-weight: 600;
+  padding: 3px 10px; border-radius: 3px; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tb-toggle:hover { background: var(--ink); color: var(--bg); }
 
-/* mobile */
-.topbar{display:none;position:fixed;top:0;left:0;right:0;height:56px;background:var(--surface);border-bottom:1px solid var(--line);z-index:45;align-items:center;gap:12px;padding:0 16px}
-.topbar .burger{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
-.topbar .burger span,.topbar .burger span::before,.topbar .burger span::after{content:"";display:block;width:17px;height:2px;background:var(--ink);position:relative}
-.topbar .burger span::before{position:absolute;top:-5px}.topbar .burger span::after{position:absolute;top:5px}
-.topbar .tt{font-family:"Kanit";font-weight:700;font-size:15px}
-.scrim{display:none;position:fixed;inset:0;background:rgba(15,34,56,.4);z-index:48}
+.tb-title {
+  font-family: var(--font-display); font-weight: 700; font-style: italic;
+  font-size: 15px; color: var(--ink);
+}
 
-@media (max-width:980px){.map-grid{grid-template-columns:1fr}.detail{position:static}}
-@media (max-width:860px){
-  :root{--sidebar-w:0px}
-  .sidebar{transform:translateX(-100%);width:280px;box-shadow:var(--shadow-lg)}
-  body.nav-open .sidebar{transform:none}
-  body.nav-open .scrim{display:block}
-  .main{margin-left:0;padding-top:56px}
-  .topbar{display:flex}
-  .navbar{left:50%}
-  .section{padding:60px 20px 90px}
-  #hero{min-height:calc(100vh - 56px)}
+.tb-nav {
+  background: none; border: 1px solid var(--ink); color: var(--ink);
+  font-family: var(--font-display); font-size: 13px; font-weight: 600;
+  padding: 4px 14px; border-radius: 3px; cursor: pointer;
+  transition: background .15s, color .15s; letter-spacing: .03em;
+}
+.tb-nav:hover { background: var(--ink); color: var(--bg); }
+.tb-nav:disabled { opacity: .25; cursor: default; }
+.tb-nav:disabled:hover { background: none; color: var(--ink); }
+
+.tb-counter {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink-faint); min-width: 48px; text-align: center;
+}
+
+/* ============================================================
+   SLIDES — one at a time, scrollable
+   ============================================================ */
+.pres-slides {
+  flex: 1; position: relative;
+  overflow-y: auto; overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+/* สกรอลล์ต่อกันแนวตั้ง — ทุกสไลด์อยู่ใน flow ไม่ซ่อนแล้ว */
+.pres-slide {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 40px 56px;
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: 0;
+}
+.pres-slide:first-child { border-top: none; padding-top: 28px; }
+
+/* slide inner wrapper */
+.slide-inner {
+  width: 100%; max-width: 880px;
+  animation: slideIn .35s ease;
+}
+/* slide 0 (map) uses full width */
+.slide-inner.wide {
+  max-width: 100%;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   STEP SLIDE STYLES
+   ============================================================ */
+.step-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+.step-num {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hot));
+  color: #fff; display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 16px;
+  box-shadow: 0 4px 12px rgba(11,77,162,.2);
+}
+.step-num.teal { background: linear-gradient(135deg, var(--teal), #0a5f53); }
+.step-num.gold { background: linear-gradient(135deg, var(--gold), #a87608); color: #3d2b00; }
+
+.step-label {
+  font-family: var(--font-display); font-weight: 600; font-size: 11px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg);
+  padding: 4px 12px; border-radius: 999px;
+}
+.step-label.teal { color: var(--teal); background: var(--teal-bg); }
+.step-label.gold { color: #8a6d14; background: var(--gold-bg); }
+
+.slide-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(22px, 3vw, 32px); line-height: 1.2;
+  margin: 0 0 10px; color: var(--ink);
+}
+
+.slide-desc {
+  font-size: 15px; color: var(--ink-soft); line-height: 1.7;
+  margin: 0 0 24px; max-width: 72ch;
+}
+.slide-desc .hl { color: var(--accent); font-weight: 600; }
+.slide-desc b { color: var(--ink); }
+
+/* feature bullets */
+.feat-list {
+  list-style: none; margin: 0 0 24px; padding: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.feat-list li {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 14px; color: var(--ink-soft);
+}
+.feat-list li .fi {
+  width: 20px; height: 20px; border-radius: 6px; flex: none; margin-top: 2px;
+  background: var(--accent-bg); color: var(--accent);
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+}
+.feat-list li b { color: var(--ink); font-weight: 600; }
+
+/* flowline chips */
+.flow-chips {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 8px; margin-bottom: 20px;
+}
+.flow-chips .fc-group {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--teal-bg); color: var(--teal);
+  border: 1px solid #b8e0d9; font-family: var(--font-display);
+  font-weight: 700; font-size: 14px; padding: 8px 14px; border-radius: 10px;
+}
+.flow-chips .fc-arrow { color: var(--ink-faint); font-size: 16px; font-weight: 700; }
+.flow-chips .fc-branch {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--paper); border: 1px solid var(--rule);
+  font-family: var(--font-display); font-weight: 600; font-size: 13px;
+  padding: 7px 12px; border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.flow-chips .fc-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--teal);
+}
+
+/* code callout */
+.code-callout {
+  margin-bottom: 24px; background: var(--ink); color: #e8e6e0;
+  border-radius: 10px; padding: 14px 18px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+}
+.code-callout .cc-icon { font-size: 20px; }
+.code-callout .cc-text {
+  font-size: 13px; color: #b0ada6; flex: 1; min-width: 160px;
+}
+.code-callout .cc-code {
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  color: #fff; background: rgba(255,255,255,.1);
+  border: 1px dashed rgba(255,255,255,.3);
+  padding: 6px 14px; border-radius: 7px; letter-spacing: .5px;
+}
+/* checksum chip — sits next to a cc-code inside the dark code callout */
+.code-callout .cc-sum {
+  font-family: var(--font-mono); font-weight: 600; font-size: 13px;
+  color: #6ee7b7; background: rgba(16,185,129,.16);
+  border: 1px solid rgba(110,231,183,.45);
+  padding: 6px 12px; border-radius: 7px; letter-spacing: .5px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+/* app store grid */
+.app-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 20px;
+}
+.ag-tile {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 12px; padding: 12px 14px;
+}
+.ag-tile .ag-icon {
+  width: 42px; height: 42px; border-radius: 10px; flex: none;
+  display: grid; place-items: center; font-size: 20px;
+  background: var(--accent-bg); color: var(--accent);
+}
+.ag-tile .ag-info { flex: 1; min-width: 0; }
+.ag-tile .ag-name {
+  font-family: var(--font-display); font-weight: 600; font-size: 13.5px;
+  line-height: 1.2;
+}
+.ag-tile .ag-sub { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+.ag-tile .ag-btn {
+  font-family: var(--font-display); font-weight: 700; font-size: 11px;
+  color: var(--accent); background: var(--accent-bg);
+  border: none; border-radius: 999px; padding: 6px 14px; white-space: nowrap;
+}
+.ag-tile.locked { opacity: .45; }
+.ag-tile.locked .ag-icon { background: #f0efe9; color: var(--ink-faint); }
+.ag-tile.locked .ag-btn { color: var(--ink-faint); background: #f0efe9; }
+
+.sync-note {
+  margin-bottom: 24px; background: var(--gold-bg);
+  border: 1px solid #e8d5a0; border-radius: 10px;
+  padding: 12px 16px; display: flex; gap: 10px;
+  align-items: flex-start; font-size: 13px; color: #6d5a1e;
+}
+.sync-note .sn-ic { font-size: 18px; line-height: 1; }
+
+/* screenshot image */
+.slide-shot {
+  border: 1px solid var(--rule); border-radius: 10px;
+  overflow: hidden; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center;
+}
+.slide-shot img {
+  display: block;
+  max-width: 100%;        /* รูปแนวนอนเต็มกรอบ, รูปเล็กไม่ถูกดึงให้ใหญ่เกินจริง */
+  max-height: 64vh;       /* รูปแนวตั้ง (มือถือ) ไม่ระเบิดความสูงทั้งสไลด์ */
+  width: auto; height: auto;
+}
+.slide-shot .ss-cap {
+  width: 100%; box-sizing: border-box;
+  font-size: 11px; color: var(--ink-faint); padding: 8px 14px;
+  border-top: 1px solid var(--rule); background: var(--paper);
+  font-family: var(--font-display); font-weight: 500;
+}
+
+/* ============================================================
+   MAP SECTION STYLES (reused from original — kept for slide 0)
+   ============================================================ */
+.map-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 16px;
+  margin: 0 0 14px; padding: 12px 16px;
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+.map-legend .li {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 500; color: var(--ink-soft);
+}
+.map-legend .li b { color: var(--ink); font-family: var(--font-display); font-weight: 600; }
+
+.mk { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: middle; flex: none; }
+.mk-role { background: var(--red); }
+.mk-location { background: var(--orange); }
+.mk-device { background: var(--teal); }
+.mk-gold { background: var(--gold); }
+.mk-brand { background: var(--accent); }
+
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px;
+}
+.toolbar .tb-label-map {
+  font-size: 12px; color: var(--ink-faint); font-weight: 600;
+}
+.seg {
+  display: inline-flex; background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 8px; padding: 3px; gap: 2px;
+}
+.seg button {
+  border: none; background: transparent; padding: 5px 11px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: all .15s;
+  font-family: var(--font-thai);
+}
+.seg button .sw { width: 8px; height: 8px; border-radius: 2px; }
+.seg button:hover { color: var(--ink); }
+.seg button.on { color: #fff; background: var(--accent); }
+.tb-spacer { flex: 1; }
+.tb-btn-map {
+  border: 1px solid var(--rule); background: var(--paper); cursor: pointer;
+  padding: 5px 12px; border-radius: 6px; font-family: var(--font-display);
+  font-weight: 600; font-size: 12px; color: var(--ink-soft);
+  transition: all .15s;
+}
+.tb-btn-map:hover { color: var(--accent); border-color: var(--rule-strong); }
+
+.map-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) 1fr;
+  gap: 20px; align-items: start;
+}
+.tree-panel {
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 12px; padding: 24px 22px; overflow-x: auto;
+  min-height: 400px;
+}
+.tree-hint {
+  font-size: 11px; color: var(--ink-faint); margin: 0 0 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* detail panel beside tree — right half, sticky */
+.detail {
+  position: sticky; top: 16px;
+  align-self: start; width: 100%;
+}
+
+ul.tree, ul.tree ul { list-style: none; margin: 0; padding: 0; }
+ul.tree ul { margin-left: 9px; }
+.tree li { position: relative; padding: 3px 0 3px 22px; }
+.tree li::before { content: ""; position: absolute; left: 8px; top: 0; height: 100%; border-left: 2px solid var(--rule-strong); }
+.tree li::after { content: ""; position: absolute; left: 8px; top: 21px; width: 13px; border-top: 2px solid var(--rule-strong); }
+.tree li:last-child::before { height: 21px; }
+.tree>li { padding-left: 0; }
+.tree>li::before, .tree>li::after { display: none; }
+.tree li.onpath::before, .tree li.onpath::after { border-color: var(--accent); }
+.tree li.collapsed > ul { display: none; }
+
+/* ---- role node + its single location child share one row ---- */
+.tree li.pair { display: flex; flex-direction: row; align-items: flex-start; gap: 0; }
+.tree li.pair > ul { margin-left: 0; padding-left: 16px; position: relative; align-self: flex-start; }
+.tree li.pair > ul::before {
+  content: ""; position: absolute; left: 0; top: 21px; width: 14px;
+  border-top: 2px solid var(--rule-strong);
+}
+.tree li.pair.onpath > ul::before { border-color: var(--accent); }
+/* the location node sharing the row drops its own elbow/spine connectors */
+.tree li.pair > ul > li { padding-left: 0; }
+.tree li.pair > ul > li::before,
+.tree li.pair > ul > li::after { display: none; }
+
+.node-row { display: flex; align-items: center; gap: 5px; }
+.caret {
+  width: 18px; height: 18px; border: none; background: transparent;
+  cursor: pointer; position: relative; padding: 0; flex: none; border-radius: 5px;
+}
+.caret:hover { background: #f0efe9; }
+.caret::before {
+  content: ""; position: absolute; left: 6px; top: 5px;
+  width: 6px; height: 6px; border-right: 2px solid var(--ink-faint);
+  border-bottom: 2px solid var(--ink-faint); transform: rotate(-45deg);
+  transition: transform .15s;
+}
+.tree li:not(.collapsed) > .node-row > .caret::before { transform: rotate(45deg); }
+.caret-spacer { width: 18px; flex: none; }
+
+.node-btn {
+  position: relative; display: inline-flex; flex-direction: column;
+  align-items: flex-start; gap: 0; background: var(--paper);
+  border: 1.5px solid var(--rule); border-left-width: 4px;
+  border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  text-align: left; transition: all .16s; max-width: 100%;
+}
+.node-btn:hover { border-color: var(--rule-strong); transform: translateX(2px); }
+.node-main { display: flex; align-items: center; gap: 8px; }
+.node-btn .n-mark { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.node-btn .n-name { font-family: var(--font-display); font-weight: 600; font-size: 13px; line-height: 1.2; display: block; white-space: nowrap; }
+.node-btn .n-en { font-size: 9px; letter-spacing: .5px; color: var(--ink-faint); text-transform: uppercase; display: block; white-space: nowrap; }
+.node-devs { display: inline-flex; gap: 4px; margin-top: 5px; margin-left: 20px; }
+.node-dev { font-size: 9px; font-weight: 700; letter-spacing: .3px; background: var(--teal-bg); color: var(--teal); padding: 2px 6px; border-radius: 5px; font-family: var(--font-display); white-space: nowrap; }
+
+.axis-role > .node-row > .node-btn { border-left-color: var(--red); }
+.axis-location > .node-row > .node-btn { border-left-color: var(--orange); }
+
+.tree li.onpath>.node-row>.node-btn { border-color: var(--accent); box-shadow: 0 2px 8px rgba(11,77,162,.12); }
+.tree li.selected>.node-row>.node-btn { background: var(--accent); border-color: var(--accent); }
+.tree li.selected>.node-row>.node-btn .n-name { color: #fff; }
+.tree li.selected>.node-row>.node-btn .n-en { color: rgba(255,255,255,.78); }
+.tree li.person-link>.node-row>.node-btn { outline: 2px dashed var(--gold); outline-offset: 2px; }
+.tree li.person-link>.node-row>.node-btn::after { content: "คนเดียวกัน"; position: absolute; top: -9px; right: -6px; background: var(--gold); color: #3d2b00; font-family: var(--font-display); font-weight: 700; font-size: 8px; padding: 2px 6px; border-radius: 999px; white-space: nowrap; }
+
+.is-guard>.node-row>.node-btn { border-color: var(--gold); }
+.is-guard>.node-row>.node-btn .n-mark { box-shadow: 0 0 0 2px var(--gold); }
+
+.map[data-emph="role"] li:not(.axis-role)>.node-row>.node-btn,
+.map[data-emph="location"] li:not(.axis-location)>.node-row>.node-btn,
+.map[data-emph="device"] li:not(.has-device)>.node-row>.node-btn { opacity: .3; filter: grayscale(.35); }
+
+/* ===== page-0 tree: chains stacked as colored cards ===== */
+.tree-panel { overflow-x: auto; }
+/* center the root (Super Admin) and drop its chains into a column below */
+.tree > li { display: flex; flex-direction: column; align-items: center; }
+.tree > li > .node-row { position: relative; z-index: 1; }
+.tree > li > ul {
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 22px; width: 100%; margin: 28px 0 0; position: relative;
+}
+/* short vertical stub connecting root down to the chain column */
+.tree > li > ul::before {
+  content: ""; position: absolute; top: -28px; left: 50%;
+  width: 2px; height: 28px; background: var(--rule-strong); transform: translateX(-1px);
+}
+/* each top-level chain becomes a self-contained, full-width colored card */
+.tree > li > ul > li {
+  flex: none; width: 100%; min-width: max-content;
+  background: var(--chain-bg); border: 1.5px solid var(--chain);
+  border-top-width: 4px; border-radius: 14px;
+  padding: 16px 18px 14px; box-shadow: 0 3px 12px rgba(0,0,0,.05);
+}
+/* chain palette — เครือที่ 1 = น้ำเงิน, เครือที่ 2 = เขียว */
+.tree > li > ul > li:nth-child(1) { --chain: var(--accent); --chain-bg: var(--accent-bg); }
+.tree > li > ul > li:nth-child(2) { --chain: var(--teal);   --chain-bg: var(--teal-bg); }
+/* the chain root sits as the card header (no dangling connector) */
+.tree > li > ul > li::before,
+.tree > li > ul > li::after { display: none; }
+.tree > li > ul > li > .node-row > .node-btn {
+  background: var(--chain); border-color: var(--chain); border-left-color: var(--chain);
+}
+.tree > li > ul > li > .node-row > .node-btn .n-name { color: #fff; }
+.tree > li > ul > li > .node-row > .node-btn .n-en { color: rgba(255,255,255,.82); }
+.tree > li > ul > li > .node-row > .node-btn .n-mark { box-shadow: 0 0 0 2px rgba(255,255,255,.55); }
+/* tint the inner branch connectors to match the chain color */
+.tree > li > ul > li li::before { border-left-color: var(--chain); }
+.tree > li > ul > li li::after  { border-top-color: var(--chain); }
+
+/* detail panel */
+.detail {
+  background: var(--paper);
+  border: 1px solid var(--rule); border-radius: 12px;
+  overflow: hidden;
+}
+.detail-empty { padding: 36px 24px; text-align: center; color: var(--ink-faint); }
+.detail-empty .arr { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--ink-soft); margin-bottom: 6px; }
+.d-head { padding: 18px 20px; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-hot)); position: relative; }
+.d-head.role { background: linear-gradient(135deg, var(--red), #a83028); }
+.d-head.location { background: linear-gradient(135deg, var(--orange), #5734a6); }
+.d-head h3 { font-size: 18px; margin: 0; color: #fff; font-family: var(--font-display); }
+.d-head .d-en { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; opacity: .85; margin-top: 2px; }
+.d-head .d-axisbadge { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,.22); font-family: var(--font-display); font-weight: 600; font-size: 10px; padding: 4px 10px; border-radius: 999px; }
+.d-body { padding: 16px 20px 22px; }
+.d-block { margin-bottom: 16px; }
+.d-block:last-child { margin-bottom: 0; }
+.d-block .lbl { font-family: var(--font-display); font-weight: 600; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.d-desc { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.breadcrumb .bc { background: #fcefda; color: #a6661a; padding: 4px 10px; border-radius: 7px; font-size: 11.5px; font-weight: 600; font-family: var(--font-display); }
+.breadcrumb .sep { color: var(--ink-faint); }
+.reports { display: inline-flex; align-items: center; gap: 8px; background: var(--red-bg); color: var(--red); padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; font-family: var(--font-display); }
+.person-box { background: var(--gold-bg); border: 1px solid #e8d5a0; border-radius: 10px; padding: 12px 14px; }
+.person-box .pt { font-size: 12.5px; color: #6d5a1e; margin: 0 0 8px; }
+.person-box .pt b { font-family: var(--font-display); font-size: 14px; color: #5c4410; }
+.mini-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.mini-list li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--ink); }
+.duty-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.duty-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; background: #f8f7f3; border: 1px solid var(--rule); padding: 9px 12px; border-radius: 9px; }
+.duty-list li .chk { width: 18px; height: 18px; border-radius: 5px; background: var(--accent); flex: none; margin-top: 1px; position: relative; }
+.duty-list li .chk::after { content: ""; position: absolute; left: 6px; top: 3px; width: 4px; height: 7px; border-right: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(45deg); }
+.duty-list li.extra { border-color: #e8d5a0; background: var(--gold-bg); }
+.duty-list li.extra .chk { background: var(--gold); }
+.duty-list li .extra-tag { margin-left: auto; font-family: var(--font-display); font-weight: 700; font-size: 9px; color: #8a6d14; background: #fff; border: 1px solid #e8d5a0; padding: 2px 6px; border-radius: 999px; align-self: center; white-space: nowrap; }
+.dev-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.dev-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-bg); color: var(--teal); border: 1px solid #b8e0d9; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+.guard-note { display: flex; gap: 10px; padding: 10px 14px; background: var(--gold-bg); border: 1px solid #e8d5a0; border-radius: 10px; font-size: 13px; color: #6d5a1e; }
+
+/* ============================================================
+   KEYBOARD HINT
+   ============================================================ */
+.pres-hint {
+  position: fixed; bottom: 10px; right: 16px;
+  font-family: var(--font-thai); font-size: 10px;
+  color: var(--ink-faint); letter-spacing: .08em; opacity: .5;
+}
+.pres-hint kbd {
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 3px; padding: 1px 5px; font-family: var(--font-mono);
+  color: var(--ink); font-size: 10px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .pres-sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    box-shadow: 4px 0 24px rgba(0,0,0,.1);
+  }
+  .pres-sidebar.collapsed { transform: translateX(calc(-1 * var(--sidebar-w))); margin-right: 0; }
+  .map-grid { grid-template-columns: 1fr; }
+  .pres-slide.active { padding: 20px 16px 48px; }
+  .detail { position: static; }
+  .app-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .pres-slide.active { padding: 20px 16px 40px; }
+  .tb-title { font-size: 13px; }
 }
 </style>
 </head>
 <body>
-<div id="progress"></div>
 
-<div class="topbar">
-  <button class="burger" id="burger" aria-label="เมนู"><span></span></button>
-  <div class="tt">VMS · ภาพรวมระบบ</div>
-</div>
-<div class="scrim" id="scrim"></div>
+<div class="pres-layout">
 
-<aside class="sidebar" id="sidebar">
-  <div class="brand">
-    <div class="logo">VMS</div>
-    <div>
-      <div class="b-title">Visitor Management</div>
-      <div class="b-sub">LAND &amp; HOUSE · สื่อการเรียนรู้</div>
+  <!-- ========== SIDEBAR ========== -->
+  <nav class="pres-sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="logo">VMS</div>
+      <div>
+        <div class="b-name">Visitor Management</div>
+        <div class="b-sub">LAND & HOUSE · ขั้นตอนตั้งค่า</div>
+      </div>
     </div>
-  </div>
-  <nav class="nav" id="nav">
-    <div class="nav-label">บทเรียน</div>
-    <a href="#hero" data-sec="hero"><span class="num">00</span> เกริ่นนำ</a>
-    <a href="#map" data-sec="map"><span class="num">02</span> ผังรวมทั้งระบบ</a>
-    <a href="#guard" data-sec="guard"><span class="num">03</span> ขั้นตอนตั้งค่า: Admin → App ยาม</a>
-    <div class="nav-label" style="margin-top:18px">ส่วนต่อไป</div>
-    <a class="soon"><span class="num">04</span> App ยาม (รายละเอียด)</a>
-    <a class="soon"><span class="num">05</span> เครื่อง KIOSK</a>
-    <a class="soon"><span class="num">06</span> Flow คนเข้า–ออก</a>
+
+    <div class="sb-chapter">I · ผังรวมระบบ</div>
+    <button class="sb-item active" data-slide="0">
+      <span class="sn">0</span> โครงสร้างทั้งระบบ
+    </button>
+
+    <div class="sb-chapter">II · ขั้นตอนตั้งค่า</div>
+    <button class="sb-item" data-slide="1">
+      <span class="sn">1</span> Admin ผู้ดูแลระบบทั้งหมด
+    </button>
+    <button class="sb-item" data-slide="2">
+      <span class="sn">2</span> เพิ่มหมู่บ้าน + สาขา
+    </button>
+    <button class="sb-item" data-slide="3">
+      <span class="sn">2.5</span> เพิ่ม Admin สาขา
+    </button>
+    <button class="sb-item" data-slide="4">
+      <span class="sn">3</span> สร้าง Role + รับ Code
+    </button>
+    <button class="sb-item" data-slide="5">
+      <span class="sn">3.5</span> ตรวจ Code ด้วย Checksum
+    </button>
+    <button class="sb-item" data-slide="6">
+      <span class="sn">4</span> Sync Action
+    </button>
+    <button class="sb-item" data-slide="7">
+      <span class="sn">5</span> หน้า App รปภ
+    </button>
+
+    <div class="sb-foot">
+      <kbd>←</kbd> <kbd>→</kbd> เปลี่ยนหน้า &nbsp; <kbd>S</kbd> ซ่อน/แสดงเมนู
+    </div>
   </nav>
-  <div class="sidebar-foot">กด <b>S</b> ซ่อน/แสดงเมนู · <b>← →</b> เปลี่ยนหัวข้อ</div>
-</aside>
 
-<main class="main">
-
-  <!-- 00 HERO -->
-  <section class="section" id="hero">
-    <div class="hero-kicker">สื่อการเรียนรู้แบบ Interactive · <b>ตอนที่ 1 — ภาพรวมทั้งระบบ</b></div>
-    <h1>ระบบ <span class="hl">Visitor Management</span><br>ใครทำอะไร อยู่ตรงไหนของระบบ</h1>
-    <p class="hero-sub">ทำความเข้าใจระบบบริหารผู้มาเยือนของหมู่บ้าน ตั้งแต่ผู้ดูแลระบบสูงสุด ไปจนถึง <b>รปภ. ที่หน้าป้อม</b> ซึ่งเป็นหัวใจของการใช้งานจริง — คลิกสำรวจได้ทุกบทบาท</p>
-    <div class="hero-chips">
-      <span class="axis-chip"><span class="swatch" style="background:var(--axis-role)"></span> คน · ใครทำอะไร (มีได้หลาย role)</span>
-      <span class="axis-chip"><span class="swatch" style="background:var(--axis-loc)"></span> สถานที่ · อยู่ส่วนไหน</span>
-      <span class="axis-chip"><span class="swatch" style="background:var(--axis-device)"></span> อุปกรณ์ · ใช้เครื่องอะไร</span>
-    </div>
-    <div class="scroll-cue"><span class="mouse"></span> เลื่อนลงเพื่อเริ่ม หรือกดเมนูด้านซ้าย</div>
-  </section>
-
-
-
-  <!-- 02 MAP -->
-  <section class="section" id="map">
-    <div class="reveal">
-      <div class="eyebrow"><span class="dot"></span> 02 · ผังรวม</div>
-      <h2>โครงสร้างทั้งระบบ — คลิกเพื่อสำรวจ</h2>
-      <p class="lead">คลิกที่กล่องใดก็ได้เพื่อดูรายละเอียด ระบบจะไฮไลต์ “เส้นทาง” จากผู้ดูแลสูงสุดลงมา และถ้าคลิกที่ <b>แอดมินที่เป็นคนเดียวกัน</b> (เช่น BOOK) จะเห็นว่าเขาดูแลกี่สาขา — กดหัวลูกศรเพื่อย่อ/ขยายกิ่ง</p>
-    </div>
-
-    <div class="map-legend reveal">
-      <span class="li"><span class="mk mk-role"></span> <b>คน</b> · 1 คนมีได้หลาย role</span>
-      <span class="li"><span class="mk mk-location"></span> <b>สถานที่</b> · หมู่บ้าน / สาขา / ป้อม</span>
-      <span class="li"><span class="mk mk-device"></span> <b>อุปกรณ์</b> · LCR &amp; KIOSK / Handheld</span>
-      <span class="li"><span class="mk mk-gold"></span> <b>จุดเน้น</b> · ผู้ใช้งาน App ยาม</span>
-    </div>
-
-    <div class="toolbar reveal">
-      <span class="tb-label">เน้นตามแกน:</span>
-      <div class="seg" id="emphSeg">
-        <button data-emph="all" class="on">ทั้งหมด</button>
-        <button data-emph="role"><span class="sw" style="background:var(--axis-role)"></span> คน</button>
-        <button data-emph="location"><span class="sw" style="background:var(--axis-loc)"></span> สถานที่</button>
-        <button data-emph="device"><span class="sw" style="background:var(--axis-device)"></span> อุปกรณ์</button>
+  <!-- ========== STAGE ========== -->
+  <div class="pres-stage">
+    <div class="pres-topbar">
+      <div class="tb-left">
+        <button class="tb-toggle" id="toggleSidebar" title="Toggle sidebar (S)">☰</button>
+        <span class="tb-title" id="slideTitle">โครงสร้างทั้งระบบ</span>
       </div>
-      <span class="tb-spacer"></span>
-      <button class="tb-btn" id="expandAll">ขยายทั้งหมด</button>
-      <button class="tb-btn" id="collapseAll">ย่อทั้งหมด</button>
-    </div>
-
-    <div class="map-grid reveal">
-      <div class="map tree-panel" id="mapPanel" data-emph="all">
-        <p class="tree-hint"><span class="mk mk-gold"></span> กล่องที่มีกรอบสีทอง = รปภ ประจำป้อม ผู้ใช้งาน App ยาม โดยตรง · ป้อมถูกพับไว้ กดขยายดูได้</p>
-        <ul class="tree" id="tree"></ul>
-      </div>
-      <div class="detail" id="detail">
-        <div class="detail-empty">
-          <div class="arr">เลือกดูรายละเอียด</div>
-          <div style="font-size:13.5px">คลิกที่กล่องใด ๆ ในผัง เพื่อดูว่าบทบาทนั้นอยู่ที่ไหน ทำหน้าที่อะไร และใช้อุปกรณ์อะไรบ้าง</div>
-        </div>
+      <div class="tb-right">
+        <button class="tb-nav" id="prevBtn" disabled>← ก่อนหน้า</button>
+        <span class="tb-counter" id="counter">1 / 8</span>
+        <button class="tb-nav" id="nextBtn">ถัดไป →</button>
       </div>
     </div>
-  </section>
 
-  <!-- 03 SETUP STEPS -->
-  <section class="section" id="guard">
-    <div class="reveal">
-      <div class="eyebrow"><span class="dot"></span> 03 · ขั้นตอนการตั้งค่า</div>
-      <h2>ตั้งค่าระบบทีละสเต็ป — จาก Admin สูงสุด สู่ App ยาม</h2>
-      <p class="lead">ไล่ตั้งแต่ผู้ดูแลระบบทั้งหมด → เพิ่มหมู่บ้าน/สาขา → เพิ่ม Admin ประจำสาขา → สร้าง Role และรับ Code → Sync Action → จนถึงหน้า App ของ รปภ ที่หน้างานจริง โครงสร้างเดียวกับโปรเจกต์เดิม <b>DGA</b> ของคุณ</p>
-    </div>
+    <div class="pres-slides" id="slidesContainer">
 
-    <div class="steps reveal">
-
-      <!-- STEP 1 -->
-      <div class="step">
-        <div class="rail"><div class="badge">1</div><div class="line"></div></div>
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-tag">เทียบกับ DGA</span>
-            <h3>Admin ผู้ดูแลระบบทั้งหมด = เหมือนโปรเจกต์ DGA เดิม</h3>
-            <p>ชั้นบนสุดคือ <span class="hl">Admin ดูแลระบบทั้งหมด</span> มองเห็นและจัดการได้ทุก Partner ทุกหมู่บ้าน — แนวคิดเดียวกับหน้า “จัดการ DGA Partner” ในโปรเจกต์เดิมของคุณเป๊ะ ๆ</p>
+      <!-- ===== SLIDE 0 — MAP ===== -->
+      <div class="pres-slide active" data-index="0">
+        <div class="slide-inner wide">
+          <div class="step-badge">
+            <div class="step-num">0</div>
+            <span class="step-label">ผังรวม</span>
           </div>
-          <div class="step-body">
-            <ul class="step-points">
-              <li><span class="pi">✓</span><span>เห็น <b>ทุก Partner / หมู่บ้าน</b> ในระบบจากที่เดียว</span></li>
-              <li><span class="pi">✓</span><span>กด <b>“+ เพิ่ม Partner”</b> เพื่อเริ่มสร้างหมู่บ้านใหม่ (ไปต่อสเต็ป 2)</span></li>
-            </ul>
-            <div class="shot">
-              <img src="images/1.png" alt="หน้า Admin จัดการ DGA Partner ทั้งหมด" loading="lazy"
-                   onerror="this.closest('.shot').classList.add('noimg')">
-              <div class="shot-cap">Admin ดูแลระบบทั้งหมด — มุมมองเดียวกับ DGA Partner</div>
-              <div class="shot-ph"><div class="pic">🖼️</div>
-                <div class="pt">วางสกรีนช็อตหน้า Admin/DGA ที่ <code>images/1.png</code></div></div>
+          <h2 class="slide-title">โครงสร้างทั้งระบบ — คลิกเพื่อสำรวจ</h2>
+          <p class="slide-desc">คลิกที่กล่องใดก็ได้เพื่อดูรายละเอียด ระบบจะไฮไลต์ "เส้นทาง" จากผู้ดูแลสูงสุดลงมา — กดหัวลูกศรเพื่อย่อ/ขยายกิ่ง</p>
+
+          <div class="map-legend">
+            <span class="li"><span class="mk mk-role"></span> <b>คน</b> · 1 คนมีได้หลาย role</span>
+            <span class="li"><span class="mk mk-location"></span> <b>สถานที่</b> · หมู่บ้าน / สาขา / ป้อม</span>
+            <span class="li"><span class="mk mk-device"></span> <b>อุปกรณ์</b> · LCR &amp; KIOSK / Handheld</span>
+            <span class="li"><span class="mk mk-gold"></span> <b>จุดเน้น</b> · ผู้ใช้งาน App ยาม</span>
+          </div>
+
+          <div class="toolbar">
+            <span class="tb-label-map">เน้นตามแกน:</span>
+            <div class="seg" id="emphSeg">
+              <button data-emph="all" class="on">ทั้งหมด</button>
+              <button data-emph="role"><span class="sw" style="background:var(--red)"></span> คน</button>
+              <button data-emph="location"><span class="sw" style="background:var(--orange)"></span> สถานที่</button>
+              <button data-emph="device"><span class="sw" style="background:var(--teal)"></span> อุปกรณ์</button>
             </div>
+            <span class="tb-spacer"></span>
+            <button class="tb-btn-map" id="expandAll">ขยายทั้งหมด</button>
+            <button class="tb-btn-map" id="collapseAll">ย่อทั้งหมด</button>
           </div>
-        </div>
-      </div>
 
-      <!-- STEP 2 -->
-      <div class="step">
-        <div class="rail"><div class="badge">2</div><div class="line"></div></div>
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-tag">เพิ่ม Partner</span>
-            <h3>เพิ่มหมู่บ้าน + สาขา (และ Group ของแต่ละที่)</h3>
-            <p>หลังกด “เพิ่ม Partner” จะเป็นการสร้าง <span class="hl">หมู่บ้าน</span> และ <span class="hl">สาขา</span> โดยแต่ละเครือมี Group ครอบอยู่ เช่น <b>LAND AND HOUSE</b> เป็น Group ด้านนอก แล้วแตกออกเป็นสาขาย่อยตามทำเล</p>
-          </div>
-          <div class="step-body">
-            <div class="flowline">
-              <span class="grp">🏢 LAND AND HOUSE</span>
-              <span class="arrow">→</span>
-              <span class="branch"><span class="dotg"></span> ภูเก็ต</span>
-              <span class="branch"><span class="dotg"></span> กรุงเทพ</span>
-              <span class="branch"><span class="dotg"></span> เชียงใหม่</span>
+          <div class="map-grid">
+            <div class="map tree-panel" id="mapPanel" data-emph="all">
+              <p class="tree-hint"><span class="mk mk-gold"></span> กล่องที่มีกรอบสีทอง = รปภ ประจำป้อม ผู้ใช้งาน App ยาม โดยตรง</p>
+              <ul class="tree" id="tree"></ul>
             </div>
-            <ul class="step-points">
-              <li><span class="pi">✓</span><span>Group ด้านนอก = <b>เครือหมู่บ้าน</b> (เช่น LAND AND HOUSE)</span></li>
-              <li><span class="pi">✓</span><span>ภายในแตกเป็น <b>หลายสาขา</b> ตามทำเล (ภูเก็ต / กรุงเทพ / เชียงใหม่)</span></li>
-            </ul>
-            <div class="shot">
-              <img src="images/2.png" alt="รายการ Partner หมู่บ้านในเครือ LAND AND HOUSE" loading="lazy"
-                   onerror="this.closest('.shot').classList.add('noimg')">
-              <div class="shot-cap">รายการ Partner — LAND AND HOUSE แตกเป็นหลายสาขา</div>
-              <div class="shot-ph"><div class="pic">🖼️</div>
-                <div class="pt">วางสกรีนช็อตรายการหมู่บ้าน/สาขา ที่ <code>images/2.png</code></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEP 2.5 -->
-      <div class="step half">
-        <div class="rail"><div class="badge">2.5</div><div class="line"></div></div>
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-tag">เพิ่ม Admin สาขา</span>
-            <h3>เพิ่ม Admin ผู้จัดการ “สาขา 1 ภูเก็ต”</h3>
-            <p>กำหนด <span class="hl">Admin ประจำสาขา</span> ขึ้นมาดูแลเฉพาะสาขานั้น ๆ — ระบุชื่อผู้ดูแล เบอร์ติดต่อ และสถานะการใช้งาน (Enabled / Disabled)</p>
-          </div>
-          <div class="step-body">
-            <ul class="step-points">
-              <li><span class="pi">✓</span><span>เพิ่ม Admin ผูกกับ <b>สาขา 1 ภูเก็ต</b> โดยตรง</span></li>
-              <li><span class="pi">✓</span><span>คุมสถานะ <b>Enabled / Disabled / Deleted</b> ของผู้ดูแลแต่ละคน</span></li>
-            </ul>
-            <div class="shot">
-              <img src="images/3.png" alt="หน้าเพิ่ม Admin จัดการสาขา 1 ภูเก็ต" loading="lazy"
-                   onerror="this.closest('.shot').classList.add('noimg')">
-              <div class="shot-cap">เพิ่ม Admin จัดการสาขา 1 ภูเก็ต</div>
-              <div class="shot-ph"><div class="pic">🖼️</div>
-                <div class="pt">วางสกรีนช็อตหน้าเพิ่ม Admin สาขา ที่ <code>images/3.png</code></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEP 3 -->
-      <div class="step">
-        <div class="rail"><div class="badge">3</div><div class="line"></div></div>
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-tag">สร้าง Role + รับ Code</span>
-            <h3>สร้าง Role ของสาขา — ใครทำหน้าที่อะไร ประจำที่ไหน</h3>
-            <p>ในแต่ละสาขากำหนด <span class="hl">Role</span> (เช่น รปภ ประจำป้อม, หัวหน้าชุด รปภ) คู่กับ <span class="hl">ตำแหน่งที่ประจำการ</span> (ป้อมประตูหน้า / ประตูหลัง) เมื่อสร้างเสร็จระบบจะออก <b>Code</b> มาให้</p>
-          </div>
-          <div class="step-body">
-            <ul class="step-points">
-              <li><span class="pi">🎖️</span><span><b>ROLE</b> — รปภ ประจำป้อม, หัวหน้าชุด รปภ ฯลฯ</span></li>
-              <li><span class="pi">📍</span><span><b>WHERE</b> — ประจำการที่ ป้อมประตูหน้า / ป้อมประตูหลัง</span></li>
-            </ul>
-            <div class="code-out">
-              <span class="co-ic">🔑</span>
-              <span class="co-txt">สร้าง Role เสร็จ ระบบออก Code ให้ — เอา Code นี้ไปกรอกในหน้า App ของ User (รปภ)</span>
-              <span class="co-code">GC-FPA000-2375B</span>
-            </div>
-            <div class="shot">
-              <img src="images/4.png" alt="รายการ Role ของสาขา 1 ภูเก็ต พร้อม Code และปุ่ม Share" loading="lazy"
-                   onerror="this.closest('.shot').classList.add('noimg')">
-              <div class="shot-cap">Role × ตำแหน่งประจำการ ของสาขา 1 ภูเก็ต พร้อม Code/Share</div>
-              <div class="shot-ph"><div class="pic">🖼️</div>
-                <div class="pt">วางสกรีนช็อตหน้า Role + Code ที่ <code>images/4.png</code></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEP 4 -->
-      <div class="step">
-        <div class="rail"><div class="badge">4</div><div class="line"></div></div>
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-tag">Sync Action</span>
-            <h3>เอา Group จากสเต็ป 3 ไป Sync กับ Action</h3>
-            <p>นำ Group (Role) ที่สร้างไว้ มา<span class="hl">จับคู่กับ Action</span> ที่อนุญาตให้ทำได้ — เลือกว่า Group นี้ทำอะไรได้บ้าง เช่น เปิด/ปิดไม้กั้น, สมัครสมาชิกให้ Visitor, ดู Dashboard, ดู LOG</p>
-          </div>
-          <div class="step-body">
-            <ul class="step-points">
-              <li><span class="pi">✓</span><span>เปิด / ปิด ไม้กั้น</span></li>
-              <li><span class="pi">✓</span><span>สมัครสมาชิกให้ Visitor</span></li>
-              <li><span class="pi">✓</span><span>ดู Dashboard · ดู LOG</span></li>
-            </ul>
-            <div class="shot">
-              <img src="images/5.png" alt="หน้า Sync Group กับ Action / Services" loading="lazy"
-                   onerror="this.closest('.shot').classList.add('noimg')">
-              <div class="shot-cap">เอา Group ไป Sync กับ Action (Services)</div>
-              <div class="shot-ph"><div class="pic">🖼️</div>
-                <div class="pt">วางสกรีนช็อตหน้า Sync Action ที่ <code>images/5.png</code></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEP 5 -->
-      <div class="step final">
-        <div class="rail"><div class="badge">5</div></div>
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-tag">หน้า App รปภ</span>
-            <h3>App ของยาม — ขึ้นเฉพาะ Action ที่ถูก Sync</h3>
-            <p>ฝั่งหน้า App ของ รปภ จะแสดง<span class="hl">เฉพาะ Action ที่ถูก Sync มาให้ Group นั้น</span> เท่านั้น เปรียบเหมือนการ “ดาวน์โหลดแอป” จาก App Store — มีสิทธิ์อันไหน อันนั้นก็โผล่ให้กดใช้</p>
-          </div>
-          <div class="step-body">
-            <div class="appstore">
-              <div class="app-tile">
-                <div class="ti">🚧</div>
-                <div class="tinfo"><div class="tname">เปิด / ปิด ไม้กั้น</div><div class="tsub">Sync แล้ว · พร้อมใช้</div></div>
-                <button class="get" type="button">เปิด</button>
-              </div>
-              <div class="app-tile">
-                <div class="ti">📋</div>
-                <div class="tinfo"><div class="tname">ดู LOG</div><div class="tsub">Sync แล้ว · พร้อมใช้</div></div>
-                <button class="get" type="button">เปิด</button>
-              </div>
-              <div class="app-tile">
-                <div class="ti">🧑🤝🧑</div>
-                <div class="tinfo"><div class="tname">สมัครสมาชิก Visitor</div><div class="tsub">Sync แล้ว · พร้อมใช้</div></div>
-                <button class="get" type="button">เปิด</button>
-              </div>
-              <div class="app-tile locked">
-                <div class="ti">📊</div>
-                <div class="tinfo"><div class="tname">ดู Dashboard</div><div class="tsub">ยังไม่ Sync ให้ Group นี้</div></div>
-                <button class="get" type="button">ล็อก</button>
+            <div class="detail" id="detail">
+              <div class="detail-empty">
+                <div class="arr">← เลือกดูรายละเอียด</div>
+                <div style="font-size:12.5px">คลิกที่กล่องใด ๆ ในผัง เพื่อดูว่าบทบาทนั้นอยู่ที่ไหน ทำหน้าที่อะไร</div>
               </div>
             </div>
-            <div class="synced-note">
-              <span class="si">📲</span>
-              <span>รปภ กรอก <b>Code</b> จากสเต็ป 3 ในแอป → แอปจะดึง “ชุด Action” ที่ตรงกับ Group มาแสดง เหมือนติดตั้งแอปจาก App Store ตามสิทธิ์ที่ได้รับ</span>
-            </div>
           </div>
         </div>
       </div>
 
-    </div>
+      <!-- ===== SLIDE 1 — STEP 1: Admin ทั้งหมด ===== -->
+      <div class="pres-slide" data-index="1">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num">1</div>
+            <span class="step-label">เทียบกับ DGA</span>
+          </div>
+          <h2 class="slide-title">Admin ผู้ดูแลระบบทั้งหมด</h2>
+          <p class="slide-desc">ชั้นบนสุดคือ <span class="hl">Admin ดูแลระบบทั้งหมด</span> มองเห็นและจัดการได้ทุก Partner ทุกหมู่บ้าน — แนวคิดเดียวกับหน้า <b>"จัดการ DGA Partner"</b> ในโปรเจกต์เดิมเป๊ะ ๆ</p>
 
-    <div class="roadmap reveal">
-      <h4>📦 ตอนต่อไปของสื่อชุดนี้ (กำลังจัดทำ)</h4>
-      <div class="r-items">
-        <span class="r">🛡️ App ยาม แบบละเอียดทีละหน้าจอ <span class="soon">เร็ว ๆ นี้</span></span>
-        <span class="r">🖥️ เครื่อง KIOSK ลงทะเบียน <span class="soon">เร็ว ๆ นี้</span></span>
-        <span class="r">🔄 Flow คนเข้า–ออก ตั้งแต่ต้นจนจบ <span class="soon">เร็ว ๆ นี้</span></span>
-        <span class="r">📊 หน้า Admin Dashboard <span class="soon">เร็ว ๆ นี้</span></span>
+          <ul class="feat-list">
+            <li><span class="fi">✓</span><span>เห็น <b>ทุก Partner / หมู่บ้าน</b> ในระบบจากที่เดียว</span></li>
+            <li><span class="fi">✓</span><span>กด <b>"+ เพิ่ม Partner"</b> เพื่อเริ่มสร้างหมู่บ้านใหม่ (ไปต่อสเต็ป 2)</span></li>
+          </ul>
+
+          <div class="slide-shot">
+            <img src="images/1.png" alt="หน้า Admin จัดการ DGA Partner ทั้งหมด">
+            <div class="ss-cap">Admin ดูแลระบบทั้งหมด — มุมมองเดียวกับ DGA Partner</div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <p class="footnote">หมายเหตุ: ภาพประกอบแต่ละสเต็ปให้วางไฟล์สกรีนช็อตไว้ในโฟลเดอร์ <code>images/</code> ตามชื่อที่ระบุใต้แต่ละช่อง หากยังไม่วางไฟล์ ระบบจะแสดงกรอบ placeholder ไว้ก่อน · ถ้อยคำและตัวอย่าง Code เรียบเรียงตามผังที่คุณออกแบบไว้ ปรับแก้ได้ตามต้องการ</p>
-  </section>
+      <!-- ===== SLIDE 2 — STEP 2: เพิ่มหมู่บ้าน + สาขา ===== -->
+      <div class="pres-slide" data-index="2">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num">2</div>
+            <span class="step-label">เพิ่ม Partner</span>
+          </div>
+          <h2 class="slide-title">เพิ่มหมู่บ้าน + สาขา — ออก Code ประจำกลุ่ม</h2>
+          <p class="slide-desc">เมื่อสร้างกลุ่ม (เครือหมู่บ้าน / สาขา) ลอง<span class="hl">สมมุติ Code ประจำกลุ่ม</span>ขึ้นมาสักอัน แล้วแนบ<span class="hl">Checksum</span>ที่คำนวณจาก Code นั้นไปด้วย — Checksum คือตัวสั้น ๆ ที่ได้จากสูตรเดียวกันทั้ง<b>หน้าบ้าน (App)</b>และ<b>หลังบ้าน (Server)</b> ใช้เช็คว่าทั้งสองฝั่งถือ Code ตรงกันไหม</p>
 
-</main>
+          <div class="flow-chips">
+            <span class="fc-group">🏢 LAND AND HOUSE</span>
+            <span class="fc-arrow">→</span>
+            <span class="fc-branch"><span class="fc-dot"></span> ภูเก็ต</span>
+            <span class="fc-branch"><span class="fc-dot"></span> กรุงเทพ</span>
+            <span class="fc-branch"><span class="fc-dot"></span> เชียงใหม่</span>
+          </div>
 
-<div class="navbar">
-  <button id="prevBtn">← ก่อนหน้า</button>
-  <span class="cur" id="curLabel">00 · เกริ่นนำ</span>
-  <button id="nextBtn">ถัดไป →</button>
+          <div class="code-callout">
+            <span class="cc-icon">🔑</span>
+            <span class="cc-text">สมมุติ Code ของกลุ่ม แล้วแนบ Checksum ที่คำนวณจาก Code นั้นมาด้วย</span>
+            <span class="cc-code">GRP-LH-0001</span>
+            <span class="cc-sum">✓ sum 7F3A</span>
+          </div>
+
+          <ul class="feat-list">
+            <li><span class="fi">🔑</span><span><b>Code ประจำกลุ่ม</b> — ตัวระบุกลุ่ม เช่น GRP-LH-0001</span></li>
+            <li><span class="fi">🧮</span><span><b>Checksum</b> — คำนวณจาก Code ด้วยสูตรเดียวกันทั้งหน้าบ้านและหลังบ้าน</span></li>
+            <li><span class="fi">✅</span><span>ใช้เทียบว่า Code ที่หน้าบ้านถืออยู่ <b>ตรง</b>กับที่หลังบ้านออกให้ — ไม่เพี้ยน ไม่ถูกแก้</span></li>
+          </ul>
+
+          <div class="slide-shot">
+            <img src="images/2.png" alt="รายการกลุ่ม/Partner ในเครือ LAND AND HOUSE">
+            <div class="ss-cap">แต่ละกลุ่มมี Code ประจำตัว (+ Checksum) สำหรับตรวจสอบ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 3 — STEP 2.5: เพิ่ม Admin สาขา ===== -->
+      <div class="pres-slide" data-index="3">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num teal">2.5</div>
+            <span class="step-label teal">เพิ่ม Admin สาขา</span>
+          </div>
+          <h2 class="slide-title">เพิ่ม Admin จัดการ "สาขา 1 ภูเก็ต"</h2>
+          <p class="slide-desc">กำหนด <span class="hl">Admin ประจำสาขา</span> ขึ้นมาดูแลเฉพาะสาขานั้น ๆ — ระบุชื่อผู้ดูแล เบอร์ติดต่อ และสถานะการใช้งาน (Enabled / Disabled)</p>
+
+          <ul class="feat-list">
+            <li><span class="fi">✓</span><span>เพิ่ม Admin ผูกกับ <b>สาขา 1 ภูเก็ต</b> โดยตรง</span></li>
+            <li><span class="fi">✓</span><span>คุมสถานะ <b>Enabled / Disabled / Deleted</b> ของผู้ดูแลแต่ละคน</span></li>
+          </ul>
+
+          <div class="slide-shot">
+            <img src="images/3.png" alt="หน้าเพิ่ม Admin จัดการสาขา 1 ภูเก็ต">
+            <div class="ss-cap">เพิ่ม Admin จัดการสาขา 1 ภูเก็ต</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 4 — STEP 3: Role + Code ===== -->
+      <div class="pres-slide" data-index="4">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num">3</div>
+            <span class="step-label">สร้าง Role + รับ Code</span>
+          </div>
+          <h2 class="slide-title">สร้าง Role ของสาขา — ใครทำอะไร ประจำที่ไหน</h2>
+          <p class="slide-desc">ในแต่ละสาขากำหนด <span class="hl">Role</span> (เช่น รปภ ประจำป้อม, หัวหน้าชุด รปภ) คู่กับ <span class="hl">ตำแหน่งที่ประจำการ</span> (ป้อมประตูหน้า / ประตูหลัง) เมื่อสร้างเสร็จระบบจะ gen <b>Code</b> มาให้ <span class="hl">พร้อม Checksum</span> สำหรับตรวจสอบความถูกต้อง — เหมือนกับ Code ของกลุ่มในสเต็ปก่อนหน้า</p>
+
+          <ul class="feat-list">
+            <li><span class="fi">🎖️</span><span><b>ROLE</b> — รปภ ประจำป้อม, หัวหน้าชุด รปภ ฯลฯ</span></li>
+            <li><span class="fi">📍</span><span><b>WHERE</b> — ประจำการที่ ป้อมประตูหน้า / ป้อมประตูหลัง</span></li>
+            <li><span class="fi">🧮</span><span><b>Code + Checksum</b> — ทุก Code ที่ระบบ gen ออกมา จะมี Checksum กำกับเสมอ</span></li>
+          </ul>
+
+          <div class="code-callout">
+            <span class="cc-icon">🔑</span>
+            <span class="cc-text">สร้าง Role เสร็จ ระบบ gen Code + Checksum ให้ — เอา Code นี้ไปกรอกในหน้า App ของ User (รปภ)</span>
+            <span class="cc-code">GC-FPA000-2375B</span>
+            <span class="cc-sum">✓ sum 9C2D</span>
+          </div>
+
+          <div class="slide-shot">
+            <img src="images/4.png" alt="รายการ Role ของสาขา 1 ภูเก็ต พร้อม Code">
+            <div class="ss-cap">Role × ตำแหน่งประจำการ ของสาขา 1 ภูเก็ต พร้อม Code/Share</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 5 — STEP 3.5: เอา Code ไปเช็คด้วย Checksum ===== -->
+      <div class="pres-slide" data-index="5">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num teal">3.5</div>
+            <span class="step-label teal">ตรวจ Code ด้วย Checksum</span>
+          </div>
+          <h2 class="slide-title">เอา Code ไปเช็ค — Checksum ช่วยให้ไม่ต้องยิง API ตรงนี้</h2>
+          <p class="slide-desc">พอหน้าบ้าน (App) รับ <span class="hl">Code</span> ที่กรอกเข้ามา ก็<span class="hl">คำนวณ Checksum เองในเครื่อง</span>ด้วยสูตรเดียวกับหลังบ้าน แล้วเทียบกับ Checksum ที่แนบมากับ Code — ถ้าตรง ก็รู้ทันทีว่า Code ฟอร์แมตถูก ไม่พิมพ์ผิด <b>โดยไม่ต้องยิง API ไปถาม Server ตรงจุดนี้</b></p>
+
+          <div class="code-callout">
+            <span class="cc-icon">🧮</span>
+            <span class="cc-text">หน้าบ้านคำนวณ Checksum จาก Code ที่กรอก แล้วเทียบกับตัวที่แนบมา — ตรง = ผ่าน</span>
+            <span class="cc-code">GC-FPA000-2375B</span>
+            <span class="cc-sum">✓ sum 9C2D ตรง</span>
+          </div>
+
+          <ul class="feat-list">
+            <li><span class="fi">⚡</span><span><b>เร็ว</b> — เช็คเสร็จในเครื่อง ไม่ต้องรอ network round-trip</span></li>
+            <li><span class="fi">📉</span><span><b>ลดภาระ Server</b> — ไม่ต้องยิง API ทุกครั้งที่ User กรอก Code</span></li>
+            <li><span class="fi">🛡️</span><span><b>กันพิมพ์ผิด</b> — Code เพี้ยนนิดเดียว Checksum ก็ไม่ตรง รู้ทันทีก่อนส่ง</span></li>
+          </ul>
+
+          <div class="slide-shot">
+            <img src="images/3.5.png" alt="ตรวจ Code ด้วย Checksum ในเครื่องก่อนยิง API">
+            <div class="ss-cap">หน้าบ้านเทียบ Checksum เองก่อน — ไม่ต้องยิง API ตรงจุดนี้</div>
+          </div>
+
+          <div class="guard-note">
+            <span class="sn-ic">ℹ️</span>
+            <span>Checksum ยืนยันแค่ว่า Code <b>ฟอร์แมตถูก / ไม่เพี้ยน</b> เท่านั้น — ส่วนจะเป็น Code ที่มีจริงและมีสิทธิ์ไหม ค่อยให้หลังบ้านยืนยันตอนเอาไปใช้งานจริง</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 6 — STEP 4: Sync Action ===== -->
+      <div class="pres-slide" data-index="6">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num">4</div>
+            <span class="step-label">Sync Action</span>
+          </div>
+          <h2 class="slide-title">เอา Group จากสเต็ป 3 ไป Sync กับ Action</h2>
+          <p class="slide-desc">นำ Group (Role) ที่สร้างไว้ มา<span class="hl">จับคู่กับ Action</span> ที่อนุญาตให้ทำได้ — โดยแต่ละ Action ที่ Sync จะมี<span class="hl">Code ประจำ Action</span>และ<span class="hl">Checksum</span>กำกับ เพื่อให้ฝั่ง App เทียบ Checksum แล้วรู้ว่าสิทธิ์ที่ได้รับมา <b>ตรงและไม่ถูกแก้</b></p>
+
+          <ul class="feat-list">
+            <li><span class="fi">✓</span><span>เปิด / ปิด ไม้กั้น</span></li>
+            <li><span class="fi">✓</span><span>สมัครสมาชิกให้ Visitor</span></li>
+            <li><span class="fi">✓</span><span>ดู Dashboard · ดู LOG</span></li>
+          </ul>
+
+          <div class="code-callout">
+            <span class="cc-icon">🔗</span>
+            <span class="cc-text">แต่ละ Action ที่ Sync มี Code + Checksum ของตัวเอง — App เทียบ Checksum ก่อนเปิดให้ใช้</span>
+            <span class="cc-code">ACT-GATE-01</span>
+            <span class="cc-sum">✓ sum B1E0</span>
+          </div>
+
+          <div class="slide-shot">
+            <img src="images/5.png" alt="หน้า Sync Group กับ Action / Services">
+            <div class="ss-cap">เอา Group ไป Sync กับ Action (Services)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 7 — STEP 5: App รปภ ===== -->
+      <div class="pres-slide" data-index="7">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num gold">5</div>
+            <span class="step-label gold">หน้า App รปภ</span>
+          </div>
+          <h2 class="slide-title">App ของยาม — ขึ้นเฉพาะ Action ที่ถูก Sync</h2>
+          <p class="slide-desc">ฝั่งหน้า App ของ รปภ จะแสดง<span class="hl">เฉพาะ Action ที่ถูก Sync มาให้ Group นั้น</span> เท่านั้น เปรียบเหมือนการ "ดาวน์โหลดแอป" จาก App Store — มีสิทธิ์อันไหน อันนั้นก็โผล่ให้กดใช้</p>
+
+          <div class="app-grid">
+            <div class="ag-tile">
+              <div class="ag-icon">🚧</div>
+              <div class="ag-info"><div class="ag-name">เปิด / ปิด ไม้กั้น</div><div class="ag-sub">Sync แล้ว · พร้อมใช้</div></div>
+              <button class="ag-btn" type="button">เปิด</button>
+            </div>
+            <div class="ag-tile">
+              <div class="ag-icon">📋</div>
+              <div class="ag-info"><div class="ag-name">ดู LOG</div><div class="ag-sub">Sync แล้ว · พร้อมใช้</div></div>
+              <button class="ag-btn" type="button">เปิด</button>
+            </div>
+            <div class="ag-tile">
+              <div class="ag-icon">🧑‍🤝‍🧑</div>
+              <div class="ag-info"><div class="ag-name">สมัครสมาชิก Visitor</div><div class="ag-sub">Sync แล้ว · พร้อมใช้</div></div>
+              <button class="ag-btn" type="button">เปิด</button>
+            </div>
+            <div class="ag-tile locked">
+              <div class="ag-icon">📊</div>
+              <div class="ag-info"><div class="ag-name">ดู Dashboard</div><div class="ag-sub">ยังไม่ Sync ให้ Group นี้</div></div>
+              <button class="ag-btn" type="button">ล็อก</button>
+            </div>
+          </div>
+
+          <div class="slide-shot">
+            <img src="images/6.png" alt="หน้า App ของ รปภ — แสดงเฉพาะ Action ที่ถูก Sync">
+            <div class="ss-cap">หน้า App ยาม — ขึ้นเฉพาะ Action ที่ถูก Sync ให้ Group นั้น</div>
+          </div>
+
+          <div class="sync-note">
+            <span class="sn-ic">📲</span>
+            <span>รปภ กรอก <b>Code</b> จากสเต็ป 3 ในแอป → แอปจะดึง "ชุด Action" ที่ตรงกับ Group มาแสดง เหมือนติดตั้งแอปจาก App Store ตามสิทธิ์ที่ได้รับ</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /pres-slides -->
+  </div><!-- /pres-stage -->
+</div><!-- /pres-layout -->
+
+<div class="pres-hint">
+  <kbd>←</kbd> <kbd>→</kbd> เปลี่ยนหน้า &nbsp; <kbd>S</kbd> ซ่อน/แสดงเมนู
 </div>
 
 <script>
 /* ============================================================
-   DATA MODEL — โครงสร้างเต็มทั้งระบบ (ถอดจากผังที่ออกแบบไว้)
-   axis: role | location  ·  person: ชื่อแอดมิน (เชื่อม "คนเดียวหลาย role")
-   ป้อมตั้ง defaultCollapsed:true เพื่อให้ผัง "ดูง่าย" ตั้งแต่แรก
+   SLIDE NAVIGATION
+   ============================================================ */
+const slides = [...document.querySelectorAll('.pres-slide')];
+const navItems = [...document.querySelectorAll('.sb-item[data-slide]')];
+const titleEl = document.getElementById('slideTitle');
+const counterEl = document.getElementById('counter');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const sidebar = document.getElementById('sidebar');
+const scroller = document.getElementById('slidesContainer');
+
+const slideTitles = [
+  'โครงสร้างทั้งระบบ',
+  'Step 1 · Admin ผู้ดูแลระบบ',
+  'Step 2 · เพิ่มหมู่บ้าน + สาขา',
+  'Step 2.5 · เพิ่ม Admin สาขา',
+  'Step 3 · สร้าง Role + รับ Code',
+  'Step 3.5 · ตรวจ Code ด้วย Checksum',
+  'Step 4 · Sync Action',
+  'Step 5 · หน้า App รปภ'
+];
+
+let current = 0;
+
+/* อัปเดตเมนู/หัวเรื่อง/ตัวนับ ตามสไลด์ที่กำลังดู */
+function setActive(i) {
+  current = i;
+  navItems.forEach((n, idx) => n.classList.toggle('active', idx === i));
+  titleEl.textContent = slideTitles[i] || '';
+  counterEl.textContent = (i + 1) + ' / ' + slides.length;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === slides.length - 1;
+}
+
+/* เลื่อนไปยังสไลด์ที่ต้องการ (แทนการสลับซ่อน/โชว์) */
+function scrollToSlide(i) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+prevBtn.addEventListener('click', () => scrollToSlide(current - 1));
+nextBtn.addEventListener('click', () => scrollToSlide(current + 1));
+navItems.forEach(item => item.addEventListener('click', () => scrollToSlide(+item.dataset.slide)));
+
+document.getElementById('toggleSidebar').addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+});
+
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); scrollToSlide(current + 1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); scrollToSlide(current - 1); }
+  else if (e.key === 's' || e.key === 'S') { sidebar.classList.toggle('collapsed'); }
+});
+
+/* scrollspy — ไฮไลต์สไลด์ที่ตัดเส้นกึ่งกลางจอ */
+const spy = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (en.isIntersecting) {
+      const i = slides.indexOf(en.target);
+      if (i >= 0) setActive(i);
+    }
+  });
+}, { root: scroller, rootMargin: '-45% 0px -55% 0px', threshold: 0 });
+slides.forEach(s => spy.observe(s));
+
+setActive(0);
+
+/* ============================================================
+   MAP TREE — DATA MODEL (slide 0)
    ============================================================ */
 function booth(pfx,n,gate,extraReg){
   return {
@@ -669,7 +1047,7 @@ function booth(pfx,n,gate,extraReg){
 function branch(id,branchName,person){
   return {
     id:'sa-'+id, name:'ADMIN สาขา', en:person, axis:'role', person:person,
-    desc:'แอดมินระดับสาขา ('+person+') — ตั้งค่าและดูแลภายในสาขา (คนเดียวอาจดูแลหลายสาขา)',
+    desc:'แอดมินระดับสาขา ('+person+') — ตั้งค่าและดูแลภายในสาขา',
     duties:['ตั้งค่า/ดูแลระดับสาขา','จัดการป้อมและทีม รปภ ของสาขา'],
     children:[{
       id:'br-'+id, name:branchName, en:'Branch', axis:'location',
@@ -711,7 +1089,6 @@ const TREE = {
   ]
 };
 
-
 /* ---------- index tree ---------- */
 const byId={}, parentOf={}, personIndex={};
 (function index(n,p){
@@ -730,7 +1107,7 @@ function locationBreadcrumb(node){
 function nearestRole(node){for(const pid of ancestorsOf(node.id)){if(byId[pid].axis==='role')return byId[pid];}return null;}
 function villageOf(id){for(const pid of ancestorsOf(id)){if(byId[pid].axis==='location')return byId[pid];}return null;}
 
-/* ---------- render ---------- */
+/* ---------- render tree ---------- */
 const treeRoot=document.getElementById('tree');
 const detail=document.getElementById('detail');
 
@@ -739,6 +1116,8 @@ function nodeEl(node,depth){
   li.dataset.id=node.id; li.dataset.depth=depth;
   li.className='axis-'+node.axis+(node.focus?' is-guard':'')+(node.devices&&node.devices.length?' has-device':'')+(node.kind==='booth'?' booth':'');
   const hasKids=node.children&&node.children.length;
+  /* role with a single location child → render them on one row (pair) */
+  if(node.axis==='role' && hasKids===1 && node.children[0].axis==='location'){ li.classList.add('pair'); }
   const row=document.createElement('div'); row.className='node-row';
   if(hasKids){
     const c=document.createElement('button'); c.className='caret'; c.type='button'; c.setAttribute('aria-label','ย่อ/ขยาย');
@@ -752,7 +1131,7 @@ function nodeEl(node,depth){
   }
   btn.innerHTML='<span class="node-main"><span class="n-mark mk-'+node.axis+'"></span>'+
     '<span class="n-text"><span class="n-name">'+node.name+'</span>'+(node.en?'<span class="n-en">'+node.en+'</span>':'')+'</span></span>'+devs;
-  btn.addEventListener('click',()=>select(node.id,true));
+  btn.addEventListener('click',()=>select(node.id));
   row.appendChild(btn);
   li.appendChild(row);
   if(hasKids){
@@ -765,11 +1144,11 @@ function nodeEl(node,depth){
 }
 treeRoot.appendChild(nodeEl(TREE,0));
 
-/* ---------- selection: path highlight + expand ancestors + person cross-link ---------- */
+/* ---------- selection ---------- */
 function clearMarks(){treeRoot.querySelectorAll('li').forEach(li=>li.classList.remove('selected','onpath','person-link'));}
 function liOf(id){return treeRoot.querySelector('li[data-id="'+CSS.escape(id)+'"]');}
 
-function select(id,scroll){
+function select(id){
   clearMarks();
   const node=byId[id];
   ancestorsOf(id).forEach(pid=>{const pl=liOf(pid);if(pl){pl.classList.add('onpath');pl.classList.remove('collapsed');}});
@@ -782,7 +1161,6 @@ function select(id,scroll){
     });
   }
   renderDetail(node);
-  if(scroll && li && window.innerWidth<=980){ li.scrollIntoView({behavior:'smooth',block:'center'}); }
 }
 
 function renderDetail(node){
@@ -798,7 +1176,7 @@ function renderDetail(node){
       const br=(inst.children&&inst.children[0])?inst.children[0].name:'';
       const vil=villageOf(pid); const vn=vil?vil.name:'';
       const me=pid===node.id;
-      return '<li><span class="mk mk-location"></span> '+br+' · '+vn+(me?' <b style="color:#a6781a">(ที่เลือก)</b>':'')+'</li>';
+      return '<li><span class="mk mk-location"></span> '+br+' · '+vn+(me?' <b style="color:#8a6d14">(ที่เลือก)</b>':'')+'</li>';
     }).join('');
     h+='<div class="d-block"><div class="lbl"><span class="mk mk-gold"></span> บุคคลเดียว หลายบทบาท</div>'+
        '<div class="person-box"><p class="pt"><b>'+node.person+'</b> ดูแลทั้งหมด '+personIndex[node.person].length+' สาขา:</p>'+
@@ -821,7 +1199,7 @@ function renderDetail(node){
       node.devices.map(d=>'<span class="dev-chip"><span class="mk mk-device"></span> '+d+'</span>').join('')+'</div></div>';
   }
   if(node.focus){
-    h+='<div class="guard-note"><span class="mk mk-gold" style="margin-top:4px"></span><div class="gt"><b>จุดเน้นหลักของระบบ</b><br>คนนี้คือผู้ใช้งาน <b>App ยาม</b> โดยตรง — งานหน้าป้อมเกือบทั้งหมดเกิดขึ้นที่นี่</div></div>';
+    h+='<div class="guard-note"><span class="mk mk-gold" style="margin-top:4px"></span><div><b>จุดเน้นหลักของระบบ</b><br>คนนี้คือผู้ใช้งาน <b>App ยาม</b> โดยตรง — งานหน้าป้อมเกือบทั้งหมดเกิดขึ้นที่นี่</div></div>';
   }
   h+='</div>';
   detail.innerHTML=h;
@@ -835,58 +1213,12 @@ document.querySelectorAll('#emphSeg button').forEach(b=>{
     b.classList.add('on'); mapPanel.dataset.emph=b.dataset.emph;
   });
 });
+
 /* ---------- expand / collapse all ---------- */
 document.getElementById('expandAll').addEventListener('click',()=>treeRoot.querySelectorAll('li').forEach(li=>li.classList.remove('collapsed')));
 document.getElementById('collapseAll').addEventListener('click',()=>{
   treeRoot.querySelectorAll('li').forEach(li=>{ if(li.querySelector(':scope > ul')) li.classList.add('collapsed'); });
 });
-
-/* ---------- section nav / progress ---------- */
-const sections=["hero","map","guard"];
-const labels={hero:"00 · เกริ่นนำ",map:"02 · ผังรวมทั้งระบบ",guard:"03 · ขั้นตอนตั้งค่า"};
-let current=0;
-const navLinks=[...document.querySelectorAll('.nav a[data-sec]')];
-const curLabel=document.getElementById('curLabel');
-const prevBtn=document.getElementById('prevBtn');
-const nextBtn=document.getElementById('nextBtn');
-function setActive(i){current=i;navLinks.forEach(a=>a.classList.toggle('active',a.dataset.sec===sections[i]));curLabel.textContent=labels[sections[i]];prevBtn.disabled=i===0;nextBtn.disabled=i===sections.length-1;}
-function goto(i){i=Math.max(0,Math.min(sections.length-1,i));document.getElementById(sections[i]).scrollIntoView({behavior:'smooth'});}
-prevBtn.addEventListener('click',()=>goto(current-1));
-nextBtn.addEventListener('click',()=>goto(current+1));
-
-/* reveal: fire per element as it enters view — works for sections taller than the viewport */
-const revealIO=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){e.target.classList.add("in");revealIO.unobserve(e.target);}
-  });
-},{rootMargin:"0px 0px -8% 0px"});
-document.querySelectorAll(".reveal").forEach(el=>revealIO.observe(el));
-
-/* scrollspy: active section = whichever crosses the viewport's center line (height-independent) */
-const spyIO=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      const i=sections.indexOf(e.target.id);
-      if(i>=0)setActive(i);
-    }
-  });
-},{rootMargin:"-45% 0px -55% 0px",threshold:0});
-sections.forEach(id=>spyIO.observe(document.getElementById(id)));
-const progress=document.getElementById('progress');
-window.addEventListener('scroll',()=>{const h=document.documentElement;progress.style.width=((h.scrollTop)/(h.scrollHeight-h.clientHeight)*100)+'%';},{passive:true});
-
-/* ---------- sidebar toggle + keyboard ---------- */
-const body=document.body;
-document.getElementById('burger').addEventListener('click',()=>body.classList.toggle('nav-open'));
-document.getElementById('scrim').addEventListener('click',()=>body.classList.remove('nav-open'));
-navLinks.forEach(a=>a.addEventListener('click',()=>body.classList.remove('nav-open')));
-document.addEventListener('keydown',e=>{
-  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
-  if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();goto(current+1);}
-  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();goto(current-1);}
-  else if(e.key==='s'||e.key==='S'){body.classList.toggle(window.innerWidth>860?'nav-collapsed':'nav-open');}
-});
-setActive(0);
 </script>
 </body>
 </html>
