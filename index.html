@@ -758,7 +758,7 @@ ul.tree ul { margin-left: 9px; }
           <p class="slide-desc">เมื่อสร้างกลุ่ม (เครือหมู่บ้าน / สาขา) ลอง<span class="hl">สมมุติ Code ประจำกลุ่ม</span>ขึ้นมาสักอัน แล้วแนบ<span class="hl">Checksum</span>ที่คำนวณจาก Code นั้นไปด้วย — Checksum คือตัวสั้น ๆ ที่ได้จากสูตรเดียวกันทั้ง<b>หน้าบ้าน (App)</b>และ<b>หลังบ้าน (Server)</b> ใช้เช็คว่าทั้งสองฝั่งถือ Code ตรงกันไหม</p>
 
           <div class="flow-chips">
-            <span class="fc-group">🏢 LAND AND HOUSE</span>
+            <span class="fc-group">LAND AND HOUSE</span>
             <span class="fc-arrow">→</span>
             <span class="fc-branch"><span class="fc-dot"></span> ภูเก็ต</span>
             <span class="fc-branch"><span class="fc-dot"></span> กรุงเทพ</span>
@@ -766,16 +766,15 @@ ul.tree ul { margin-left: 9px; }
           </div>
 
           <div class="code-callout">
-            <span class="cc-icon">🔑</span>
             <span class="cc-text">สมมุติ Code ของกลุ่ม แล้วแนบ Checksum ที่คำนวณจาก Code นั้นมาด้วย</span>
             <span class="cc-code">GRP-LH-0001</span>
             <span class="cc-sum">✓ sum 7F3A</span>
           </div>
 
           <ul class="feat-list">
-            <li><span class="fi">🔑</span><span><b>Code ประจำกลุ่ม</b> — ตัวระบุกลุ่ม เช่น GRP-LH-0001</span></li>
-            <li><span class="fi">🧮</span><span><b>Checksum</b> — คำนวณจาก Code ด้วยสูตรเดียวกันทั้งหน้าบ้านและหลังบ้าน</span></li>
-            <li><span class="fi">✅</span><span>ใช้เทียบว่า Code ที่หน้าบ้านถืออยู่ <b>ตรง</b>กับที่หลังบ้านออกให้ — ไม่เพี้ยน ไม่ถูกแก้</span></li>
+            <li><span class="fi">✓</span><span><b>Code ประจำกลุ่ม</b> — ตัวระบุกลุ่ม เช่น GRP-LH-0001</span></li>
+            <li><span class="fi">✓</span><span><b>Checksum</b> — คำนวณจาก Code ด้วยสูตรเดียวกันทั้งหน้าบ้านและหลังบ้าน</span></li>
+            <li><span class="fi">✓</span><span>ใช้เทียบว่า Code ที่หน้าบ้านถืออยู่ <b>ตรง</b>กับที่หลังบ้านออกให้ — ไม่เพี้ยน ไม่ถูกแก้</span></li>
           </ul>
 
           <div class="slide-shot">
@@ -818,13 +817,12 @@ ul.tree ul { margin-left: 9px; }
           <p class="slide-desc">ในแต่ละสาขากำหนด <span class="hl">Role</span> (เช่น รปภ ประจำป้อม, หัวหน้าชุด รปภ) คู่กับ <span class="hl">ตำแหน่งที่ประจำการ</span> (ป้อมประตูหน้า / ประตูหลัง) เมื่อสร้างเสร็จระบบจะ gen <b>Code</b> มาให้ <span class="hl">พร้อม Checksum</span> สำหรับตรวจสอบความถูกต้อง — เหมือนกับ Code ของกลุ่มในสเต็ปก่อนหน้า</p>
 
           <ul class="feat-list">
-            <li><span class="fi">🎖️</span><span><b>ROLE</b> — รปภ ประจำป้อม, หัวหน้าชุด รปภ ฯลฯ</span></li>
-            <li><span class="fi">📍</span><span><b>WHERE</b> — ประจำการที่ ป้อมประตูหน้า / ป้อมประตูหลัง</span></li>
-            <li><span class="fi">🧮</span><span><b>Code + Checksum</b> — ทุก Code ที่ระบบ gen ออกมา จะมี Checksum กำกับเสมอ</span></li>
+            <li><span class="fi">✓</span><span><b>ROLE</b> — รปภ ประจำป้อม, หัวหน้าชุด รปภ ฯลฯ</span></li>
+            <li><span class="fi">✓</span><span><b>WHERE</b> — ประจำการที่ ป้อมประตูหน้า / ป้อมประตูหลัง</span></li>
+            <li><span class="fi">✓</span><span><b>Code + Checksum</b> — ทุก Code ที่ระบบ gen ออกมา จะมี Checksum กำกับเสมอ</span></li>
           </ul>
 
           <div class="code-callout">
-            <span class="cc-icon">🔑</span>
             <span class="cc-text">สร้าง Role เสร็จ ระบบ gen Code + Checksum ให้ — เอา Code นี้ไปกรอกในหน้า App ของ User (รปภ)</span>
             <span class="cc-code">GC-FPA000-2375B</span>
             <span class="cc-sum">✓ sum 9C2D</span>
@@ -848,16 +846,15 @@ ul.tree ul { margin-left: 9px; }
           <p class="slide-desc">พอหน้าบ้าน (App) รับ <span class="hl">Code</span> ที่กรอกเข้ามา ก็<span class="hl">คำนวณ Checksum เองในเครื่อง</span>ด้วยสูตรเดียวกับหลังบ้าน แล้วเทียบกับ Checksum ที่แนบมากับ Code — ถ้าตรง ก็รู้ทันทีว่า Code ฟอร์แมตถูก ไม่พิมพ์ผิด <b>โดยไม่ต้องยิง API ไปถาม Server ตรงจุดนี้</b></p>
 
           <div class="code-callout">
-            <span class="cc-icon">🧮</span>
             <span class="cc-text">หน้าบ้านคำนวณ Checksum จาก Code ที่กรอก แล้วเทียบกับตัวที่แนบมา — ตรง = ผ่าน</span>
             <span class="cc-code">GC-FPA000-2375B</span>
             <span class="cc-sum">✓ sum 9C2D ตรง</span>
           </div>
 
           <ul class="feat-list">
-            <li><span class="fi">⚡</span><span><b>เร็ว</b> — เช็คเสร็จในเครื่อง ไม่ต้องรอ network round-trip</span></li>
-            <li><span class="fi">📉</span><span><b>ลดภาระ Server</b> — ไม่ต้องยิง API ทุกครั้งที่ User กรอก Code</span></li>
-            <li><span class="fi">🛡️</span><span><b>กันพิมพ์ผิด</b> — Code เพี้ยนนิดเดียว Checksum ก็ไม่ตรง รู้ทันทีก่อนส่ง</span></li>
+            <li><span class="fi">✓</span><span><b>เร็ว</b> — เช็คเสร็จในเครื่อง ไม่ต้องรอ network round-trip</span></li>
+            <li><span class="fi">✓</span><span><b>ลดภาระ Server</b> — ไม่ต้องยิง API ทุกครั้งที่ User กรอก Code</span></li>
+            <li><span class="fi">✓</span><span><b>กันพิมพ์ผิด</b> — Code เพี้ยนนิดเดียว Checksum ก็ไม่ตรง รู้ทันทีก่อนส่ง</span></li>
           </ul>
 
           <div class="slide-shot">
@@ -866,8 +863,7 @@ ul.tree ul { margin-left: 9px; }
           </div>
 
           <div class="guard-note">
-            <span class="sn-ic">ℹ️</span>
-            <span>Checksum ยืนยันแค่ว่า Code <b>ฟอร์แมตถูก / ไม่เพี้ยน</b> เท่านั้น — ส่วนจะเป็น Code ที่มีจริงและมีสิทธิ์ไหม ค่อยให้หลังบ้านยืนยันตอนเอาไปใช้งานจริง</span>
+            <span><b>หมายเหตุ:</b> Checksum ยืนยันแค่ว่า Code <b>ฟอร์แมตถูก / ไม่เพี้ยน</b> เท่านั้น — ส่วนจะเป็น Code ที่มีจริงและมีสิทธิ์ไหม ค่อยให้หลังบ้านยืนยันตอนเอาไปใช้งานจริง</span>
           </div>
         </div>
       </div>
@@ -889,7 +885,6 @@ ul.tree ul { margin-left: 9px; }
           </ul>
 
           <div class="code-callout">
-            <span class="cc-icon">🔗</span>
             <span class="cc-text">แต่ละ Action ที่ Sync มี Code + Checksum ของตัวเอง — App เทียบ Checksum ก่อนเปิดให้ใช้</span>
             <span class="cc-code">ACT-GATE-01</span>
             <span class="cc-sum">✓ sum B1E0</span>
@@ -941,7 +936,6 @@ ul.tree ul { margin-left: 9px; }
           </div>
 
           <div class="sync-note">
-            <span class="sn-ic">📲</span>
             <span>รปภ กรอก <b>Code</b> จากสเต็ป 3 ในแอป → แอปจะดึง "ชุด Action" ที่ตรงกับ Group มาแสดง เหมือนติดตั้งแอปจาก App Store ตามสิทธิ์ที่ได้รับ</span>
           </div>
         </div>
