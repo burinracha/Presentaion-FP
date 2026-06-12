@@ -510,6 +510,7 @@ body {
 .dl-dot.personal { background: var(--accent); }
 .dl-dot.booth { background: var(--gold); }
 .dl-dot.lane { background: var(--teal); }
+.dl-dot.sec { background: var(--red); }
 
 /* role selector — wraps, shows tag + name + sub */
 .role-seg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
@@ -550,6 +551,17 @@ body {
 .dchip.booth::before { background: var(--gold); }
 .dchip.lane { background: var(--teal-bg); border-color: #b8e0d9; color: var(--teal); }
 .dchip.lane::before { background: var(--teal); }
+.dchip.sec { background: var(--red-bg); border-color: #f3c0b9; color: var(--red); font-weight: 700; }
+.dchip.sec::before { background: var(--red); }
+/* alternative-path separator + guard-verify star marker */
+.cp-sep { display: inline-flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--ink-faint); padding: 0 3px; }
+.cp-star { display: inline-flex; align-items: center; justify-content: center; align-self: center; width: 18px; height: 18px; border-radius: 4px; background: var(--red); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 12px; }
+/* combined-group name pills above the flow */
+.flow-head { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2px; }
+.flow-tag { font-family: var(--font-display); font-weight: 600; font-size: 12.5px; color: var(--accent-hot); background: var(--accent-bg); border: 1px solid #bcd4f5; padding: 4px 12px; border-radius: 8px; }
+.flow-tag.alt { color: #2f6db5; background: #eff5fd; border-color: #cfe0f7; }
+.cp-foot { font-size: 12px; color: var(--ink-soft); margin: -10px 0 18px; }
+.cp-foot b { color: var(--red); }
 .cp-note { font-size: 12.5px; color: var(--ink-soft); }
 .cp-note b { color: var(--ink); }
 .cp-empty { font-size: 12.5px; color: var(--ink-faint); font-style: italic; }
@@ -890,21 +902,20 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label teal">Visitor · อุปกรณ์ที่แต่ละ Role แตะ</span>
           </div>
           <h2 class="slide-title">ใครเจออุปกรณ์อะไร — ไล่ตาม Check Point</h2>
-          <p class="slide-desc">เลือกกลุ่มผู้มาเยือนด้านล่าง ระบบจะไล่ให้ดูว่าตั้งแต่ <b>ก่อนมาถึง → เข้า → ระหว่างอยู่ → ออก</b> เขาต้อง interact กับ <span class="hl">อุปกรณ์</span> ตัวไหนบ้าง — สีของชิปบอกว่าอุปกรณ์อยู่โซนไหน</p>
 
           <div class="dev-legend">
-            <span class="dl-zone"><span class="dl-dot personal"></span> <b>มือถือผู้มาเยือน</b> · Line OA · Beacon · Bio · Web/App</span>
-            <span class="dl-zone"><span class="dl-dot booth"></span> <b>จุดบริการ/ป้อม</b> · Kiosk · Render · อุปกรณ์ รปภ</span>
-            <span class="dl-zone"><span class="dl-dot lane"></span> <b>ช่องทางรถ</b> · LPR · ไม้กั้น · QR จ่ายเงิน</span>
+            <span class="dl-zone"><span class="dl-dot personal"></span> <b>มือถือผู้มาเยือน</b></span>
+            <span class="dl-zone"><span class="dl-dot booth"></span> <b>จุดบริการ/ป้อม</b></span>
+            <span class="dl-zone"><span class="dl-dot lane"></span> <b>ช่องทางรถ</b></span>
+            <span class="dl-zone"><span class="dl-dot sec"></span> <b>รปภ verify</b></span>
           </div>
 
           <div class="role-seg" id="roleSeg"></div>
           <div class="cp-flow" id="cpFlow"></div>
+          <p class="cp-foot"><b>*</b> รปภ verify (Handheld/Tablet) · <b>/</b> ทางเลือกเข้า</p>
 
           <ul class="feat-list">
-            <li><span class="fi">✓</span><span><b>ต่างกันแค่ 3 แกน</b> — Walk-in vs จองล่วงหน้า · EV (จ่ายเงิน) vs ไม่ EV · Visitor (ครั้งเดียว) vs Internal/User (ใช้ซ้ำ)</span></li>
-            <li><span class="fi">✓</span><span><b>จองล่วงหน้า = แตะอุปกรณ์น้อยลง</b> — ผ่าน Beacon + LPR อัตโนมัติ ไม่ต้องลงทะเบียนที่ป้อม</span></li>
-            <li><span class="fi">✓</span><span><b>Handheld กับ Tablet ทำงานเดียวกัน</b> — รปภ ใช้ verify ข้อมูลจาก LPR จึงรวมเป็น "อุปกรณ์ รปภ" ตัวเดียว</span></li>
+            <li><span class="fi">✓</span><span><b>3 แกน:</b> Walk-in/จอง · EV/ไม่ EV · ครั้งเดียว(Visitor)/ใช้ซ้ำ(Internal·User)</span></li>
           </ul>
         </div>
       </div>
@@ -917,7 +928,7 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label">ผังรวม</span>
           </div>
           <h2 class="slide-title">โครงสร้างทั้งระบบ — คลิกเพื่อสำรวจ</h2>
-          <p class="slide-desc">คลิกที่กล่องใดก็ได้เพื่อดูรายละเอียด ระบบจะไฮไลต์ "เส้นทาง" จากผู้ดูแลสูงสุดลงมา — กดหัวลูกศรเพื่อย่อ/ขยายกิ่ง</p>
+          <p class="slide-desc">คลิกกล่องเพื่อดูเส้นทาง · กดหัวลูกศรย่อ/ขยายกิ่ง</p>
 
           <div class="map-legend">
             <span class="li"><span class="mk mk-role"></span> <b>คน</b> · 1 คนมีได้หลาย role</span>
@@ -962,16 +973,10 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label">เทียบกับ DGA</span>
           </div>
           <h2 class="slide-title">Admin ผู้ดูแลระบบทั้งหมด</h2>
-          <p class="slide-desc">ชั้นบนสุดคือ <span class="hl">Admin ดูแลระบบทั้งหมด</span> มองเห็นและจัดการได้ทุก Partner ทุกหมู่บ้าน — แนวคิดเดียวกับหน้า <b>"จัดการ DGA Partner"</b> ในโปรเจกต์เดิมเป๊ะ ๆ</p>
-
-          <ul class="feat-list">
-            <li><span class="fi">✓</span><span>เห็น <b>ทุก Partner / หมู่บ้าน</b> ในระบบจากที่เดียว</span></li>
-            <li><span class="fi">✓</span><span>กด <b>"+ เพิ่ม Partner"</b> เพื่อเริ่มสร้างหมู่บ้านใหม่ (ไปต่อสเต็ป 2)</span></li>
-          </ul>
+          <p class="slide-desc">ชั้นบนสุด — เห็นและจัดการทุก Partner ทุกหมู่บ้านจากที่เดียว</p>
 
           <div class="slide-shot">
             <img src="images/1.png" alt="หน้า Admin จัดการ DGA Partner ทั้งหมด">
-            <div class="ss-cap">Admin ดูแลระบบทั้งหมด — มุมมองเดียวกับ DGA Partner</div>
           </div>
         </div>
       </div>
@@ -984,7 +989,7 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label">เพิ่ม Partner</span>
           </div>
           <h2 class="slide-title">เพิ่มหมู่บ้าน + สาขา — ออก Code ประจำกลุ่ม</h2>
-          <p class="slide-desc">เมื่อสร้างกลุ่ม (เครือหมู่บ้าน / สาขา) ลอง<span class="hl">สมมุติ Code ประจำกลุ่ม</span>ขึ้นมาสักอัน แล้วแนบ<span class="hl">Checksum</span>ที่คำนวณจาก Code นั้นไปด้วย — Checksum คือตัวสั้น ๆ ที่ได้จากสูตรเดียวกันทั้ง<b>หน้าบ้าน (App)</b>และ<b>หลังบ้าน (Server)</b> ใช้เช็คว่าทั้งสองฝั่งถือ Code ตรงกันไหม</p>
+          <p class="slide-desc">ออก <span class="hl">Code ประจำกลุ่ม</span> + แนบ <span class="hl">Checksum</span> (คำนวณจาก Code) ให้หน้าบ้าน–หลังบ้านเช็คว่าตรงกัน</p>
 
           <div class="flow-chips">
             <span class="fc-group">LAND AND HOUSE</span>
@@ -995,20 +1000,12 @@ ul.tree ul { margin-left: 9px; }
           </div>
 
           <div class="code-callout">
-            <span class="cc-text">สมมุติ Code ของกลุ่ม แล้วแนบ Checksum ที่คำนวณจาก Code นั้นมาด้วย</span>
             <span class="cc-code">GRP-LH-0001</span>
             <span class="cc-sum">✓ sum 7F3A</span>
           </div>
 
-          <ul class="feat-list">
-            <li><span class="fi">✓</span><span><b>Code ประจำกลุ่ม</b> — ตัวระบุกลุ่ม เช่น GRP-LH-0001</span></li>
-            <li><span class="fi">✓</span><span><b>Checksum</b> — คำนวณจาก Code ด้วยสูตรเดียวกันทั้งหน้าบ้านและหลังบ้าน</span></li>
-            <li><span class="fi">✓</span><span>ใช้เทียบว่า Code ที่หน้าบ้านถืออยู่ <b>ตรง</b>กับที่หลังบ้านออกให้ — ไม่เพี้ยน ไม่ถูกแก้</span></li>
-          </ul>
-
           <div class="slide-shot">
             <img src="images/2.png" alt="รายการกลุ่ม/Partner ในเครือ LAND AND HOUSE">
-            <div class="ss-cap">แต่ละกลุ่มมี Code ประจำตัว (+ Checksum) สำหรับตรวจสอบ</div>
           </div>
         </div>
       </div>
@@ -1021,16 +1018,10 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label teal">เพิ่ม Admin สาขา</span>
           </div>
           <h2 class="slide-title">เพิ่ม Admin จัดการ "สาขา 1 ภูเก็ต"</h2>
-          <p class="slide-desc">กำหนด <span class="hl">Admin ประจำสาขา</span> ขึ้นมาดูแลเฉพาะสาขานั้น ๆ — ระบุชื่อผู้ดูแล เบอร์ติดต่อ และสถานะการใช้งาน (Enabled / Disabled)</p>
-
-          <ul class="feat-list">
-            <li><span class="fi">✓</span><span>เพิ่ม Admin ผูกกับ <b>สาขา 1 ภูเก็ต</b> โดยตรง</span></li>
-            <li><span class="fi">✓</span><span>คุมสถานะ <b>Enabled / Disabled / Deleted</b> ของผู้ดูแลแต่ละคน</span></li>
-          </ul>
+          <p class="slide-desc">ตั้ง <span class="hl">Admin ประจำสาขา</span> — ชื่อ · เบอร์ · สถานะ (Enabled / Disabled)</p>
 
           <div class="slide-shot">
             <img src="images/3.png" alt="หน้าเพิ่ม Admin จัดการสาขา 1 ภูเก็ต">
-            <div class="ss-cap">เพิ่ม Admin จัดการสาขา 1 ภูเก็ต</div>
           </div>
         </div>
       </div>
@@ -1043,23 +1034,15 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label">สร้าง Role + รับ Code</span>
           </div>
           <h2 class="slide-title">สร้าง Role ของสาขา — ใครทำอะไร ประจำที่ไหน</h2>
-          <p class="slide-desc">ในแต่ละสาขากำหนด <span class="hl">Role</span> (เช่น รปภ ประจำป้อม, หัวหน้าชุด รปภ) คู่กับ <span class="hl">ตำแหน่งที่ประจำการ</span> (ป้อมประตูหน้า / ประตูหลัง) เมื่อสร้างเสร็จระบบจะ gen <b>Code</b> มาให้ <span class="hl">พร้อม Checksum</span> สำหรับตรวจสอบความถูกต้อง — เหมือนกับ Code ของกลุ่มในสเต็ปก่อนหน้า</p>
-
-          <ul class="feat-list">
-            <li><span class="fi">✓</span><span><b>ROLE</b> — รปภ ประจำป้อม, หัวหน้าชุด รปภ ฯลฯ</span></li>
-            <li><span class="fi">✓</span><span><b>WHERE</b> — ประจำการที่ ป้อมประตูหน้า / ป้อมประตูหลัง</span></li>
-            <li><span class="fi">✓</span><span><b>Code + Checksum</b> — ทุก Code ที่ระบบ gen ออกมา จะมี Checksum กำกับเสมอ</span></li>
-          </ul>
+          <p class="slide-desc">กำหนด <span class="hl">Role</span> + <span class="hl">ตำแหน่งประจำการ</span> → ระบบ gen <b>Code + Checksum</b> ให้</p>
 
           <div class="code-callout">
-            <span class="cc-text">สร้าง Role เสร็จ ระบบ gen Code + Checksum ให้ — เอา Code นี้ไปกรอกในหน้า App ของ User (รปภ)</span>
             <span class="cc-code">GC-FPA000-2375B</span>
             <span class="cc-sum">✓ sum 9C2D</span>
           </div>
 
           <div class="slide-shot">
             <img src="images/4.png" alt="รายการ Role ของสาขา 1 ภูเก็ต พร้อม Code">
-            <div class="ss-cap">Role × ตำแหน่งประจำการ ของสาขา 1 ภูเก็ต พร้อม Code/Share</div>
           </div>
         </div>
       </div>
@@ -1072,28 +1055,17 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label teal">ตรวจ Code ด้วย Checksum</span>
           </div>
           <h2 class="slide-title">เอา Code ไปเช็ค — Checksum ช่วยให้ไม่ต้องยิง API ตรงนี้</h2>
-          <p class="slide-desc">พอหน้าบ้าน (App) รับ <span class="hl">Code</span> ที่กรอกเข้ามา ก็<span class="hl">คำนวณ Checksum เองในเครื่อง</span>ด้วยสูตรเดียวกับหลังบ้าน แล้วเทียบกับ Checksum ที่แนบมากับ Code — ถ้าตรง ก็รู้ทันทีว่า Code ฟอร์แมตถูก ไม่พิมพ์ผิด <b>โดยไม่ต้องยิง API ไปถาม Server ตรงจุดนี้</b></p>
+          <p class="slide-desc">App <span class="hl">คำนวณ Checksum เองในเครื่อง</span> เทียบกับที่แนบมา — ตรง = Code ถูก <b>ไม่ต้องยิง API</b></p>
 
           <div class="code-callout">
-            <span class="cc-text">หน้าบ้านคำนวณ Checksum จาก Code ที่กรอก แล้วเทียบกับตัวที่แนบมา — ตรง = ผ่าน</span>
             <span class="cc-code">GC-FPA000-2375B</span>
             <span class="cc-sum">✓ sum 9C2D ตรง</span>
           </div>
 
-          <ul class="feat-list">
-            <li><span class="fi">✓</span><span><b>เร็ว</b> — เช็คเสร็จในเครื่อง ไม่ต้องรอ network round-trip</span></li>
-            <li><span class="fi">✓</span><span><b>ลดภาระ Server</b> — ไม่ต้องยิง API ทุกครั้งที่ User กรอก Code</span></li>
-            <li><span class="fi">✓</span><span><b>กันพิมพ์ผิด</b> — Code เพี้ยนนิดเดียว Checksum ก็ไม่ตรง รู้ทันทีก่อนส่ง</span></li>
-          </ul>
-
           <div class="slide-shot">
             <img src="images/3.5.png" alt="ตรวจ Code ด้วย Checksum ในเครื่องก่อนยิง API">
-            <div class="ss-cap">หน้าบ้านเทียบ Checksum เองก่อน — ไม่ต้องยิง API ตรงจุดนี้</div>
           </div>
 
-          <div class="guard-note">
-            <span><b>หมายเหตุ:</b> Checksum ยืนยันแค่ว่า Code <b>ฟอร์แมตถูก / ไม่เพี้ยน</b> เท่านั้น — ส่วนจะเป็น Code ที่มีจริงและมีสิทธิ์ไหม ค่อยให้หลังบ้านยืนยันตอนเอาไปใช้งานจริง</span>
-          </div>
         </div>
       </div>
 
@@ -1105,23 +1077,15 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label">Sync Action</span>
           </div>
           <h2 class="slide-title">เอา Group จากสเต็ป 3 ไป Sync กับ Action</h2>
-          <p class="slide-desc">นำ Group (Role) ที่สร้างไว้ มา<span class="hl">จับคู่กับ Action</span> ที่อนุญาตให้ทำได้ — โดยแต่ละ Action ที่ Sync จะมี<span class="hl">Code ประจำ Action</span>และ<span class="hl">Checksum</span>กำกับ เพื่อให้ฝั่ง App เทียบ Checksum แล้วรู้ว่าสิทธิ์ที่ได้รับมา <b>ตรงและไม่ถูกแก้</b></p>
-
-          <ul class="feat-list">
-            <li><span class="fi">✓</span><span>เปิด / ปิด ไม้กั้น</span></li>
-            <li><span class="fi">✓</span><span>สมัครสมาชิกให้ Visitor</span></li>
-            <li><span class="fi">✓</span><span>ดู Dashboard · ดู LOG</span></li>
-          </ul>
+          <p class="slide-desc"><span class="hl">จับคู่ Group กับ Action</span> ที่ทำได้ — แต่ละ Action มี Code + Checksum กำกับ</p>
 
           <div class="code-callout">
-            <span class="cc-text">แต่ละ Action ที่ Sync มี Code + Checksum ของตัวเอง — App เทียบ Checksum ก่อนเปิดให้ใช้</span>
             <span class="cc-code">ACT-GATE-01</span>
             <span class="cc-sum">✓ sum B1E0</span>
           </div>
 
           <div class="slide-shot">
             <img src="images/5.png" alt="หน้า Sync Group กับ Action / Services">
-            <div class="ss-cap">เอา Group ไป Sync กับ Action (Services)</div>
           </div>
         </div>
       </div>
@@ -1134,7 +1098,7 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label gold">หน้า App รปภ</span>
           </div>
           <h2 class="slide-title">App ของยาม — ขึ้นเฉพาะ Action ที่ถูก Sync</h2>
-          <p class="slide-desc">ฝั่งหน้า App ของ รปภ จะแสดง<span class="hl">เฉพาะ Action ที่ถูก Sync มาให้ Group นั้น</span> เท่านั้น เปรียบเหมือนการ "ดาวน์โหลดแอป" จาก App Store — มีสิทธิ์อันไหน อันนั้นก็โผล่ให้กดใช้</p>
+          <p class="slide-desc">App รปภ ขึ้น<span class="hl">เฉพาะ Action ที่ Sync ให้ Group นั้น</span> — เหมือนโหลดแอปตามสิทธิ์</p>
 
           <div class="app-grid">
             <div class="ag-tile">
@@ -1161,12 +1125,8 @@ ul.tree ul { margin-left: 9px; }
 
           <div class="slide-shot">
             <img src="images/6.png" alt="หน้า App ของ รปภ — แสดงเฉพาะ Action ที่ถูก Sync">
-            <div class="ss-cap">หน้า App ยาม — ขึ้นเฉพาะ Action ที่ถูก Sync ให้ Group นั้น</div>
           </div>
 
-          <div class="sync-note">
-            <span>รปภ กรอก <b>Code</b> จากสเต็ป 3 ในแอป → แอปจะดึง "ชุด Action" ที่ตรงกับ Group มาแสดง เหมือนติดตั้งแอปจาก App Store ตามสิทธิ์ที่ได้รับ</span>
-          </div>
         </div>
       </div>
 
@@ -1178,7 +1138,7 @@ ul.tree ul { margin-left: 9px; }
             <span class="step-label gold">ฟีเจอร์หลัก · LPR เปิดอัตโนมัติ</span>
           </div>
           <h2 class="slide-title">สแกน → Prefill Log — เข้าอัตโนมัติ แล้วบันทึกให้เลย</h2>
-          <p class="slide-desc">สแกนแล้ว <span class="hl">prefill ข้อมูลลงฟอร์ม Log อัตโนมัติ</span> — แบ่งการเข้าเป็น 2 แบบ</p>
+          <p class="slide-desc">สแกน → <span class="hl">prefill ฟอร์ม Log อัตโนมัติ</span> · เข้าได้ 2 แบบ</p>
 
           <div class="seg entry-modes" id="entryModeSeg">
             <button data-mode="car" class="on">รถเข้า</button>
@@ -1313,11 +1273,6 @@ ul.tree ul { margin-left: 9px; }
             <div class="lpr-gate deny">รปภ กรอก/ยืนยันก่อน แล้วบันทึก Log ผู้เข้า</div>
           </div>
 
-          <ul class="feat-list">
-            <li><span class="fi">✓</span><span><b>สแกน → Prefill</b> — ป้ายทะเบียน / บัตร ปชช. เติมลงฟอร์ม Log ให้เอง</span></li>
-            <li><span class="fi">✓</span><span><b>ตรง = เข้าอัตโนมัติ + บันทึก Log</b> ทันที</span></li>
-            <li><span class="fi">✓</span><span><b>สแกนพลาด = รปภ แก้ field บน Handheld</b> แล้วกดยืนยัน</span></li>
-          </ul>
         </div>
       </div>
 
@@ -1614,16 +1569,17 @@ if(entrySeg){
 
   /* device dictionary: key -> [label, zone]. zone drives chip color */
   const DEV = {
-    lineoa: ['Line OA', 'personal'],
-    beacon: ['Line Beacon', 'personal'],
-    bio:    ['Biometrics', 'personal'],
-    webapp: ['Web/App จอง·invite', 'personal'],
-    kiosk:  ['Kiosk', 'booth'],
-    render: ['Render จอแสดงผล', 'booth'],
-    guard:  ['อุปกรณ์ รปภ (Handheld/Tablet)', 'booth'],
-    lpr:    ['LPR ป้ายทะเบียน', 'lane'],
-    barrier:['ไม้กั้น', 'lane'],
-    qr:     ['QR จ่ายเงิน', 'lane']
+    lineoa:    ['Line OA', 'personal'],
+    bluetooth: ['Bluetooth', 'personal'],
+    beacon:    ['Line Beacon', 'personal'],
+    bio:       ['Biometrics', 'personal'],
+    webapp:    ['Web/App', 'personal'],
+    estamp:    ['e-stamp', 'personal'],
+    kiosk:     ['Kiosk', 'booth'],
+    agent:     ['Agent flow', 'booth'],
+    qr:        ['QR จ่ายเงิน', 'lane'],
+    lpr:       ['LPR', 'sec'],
+    guard:     ['อุปกรณ์ รปภ', 'sec']
   };
 
   /* checkpoint helper: cp(tag, name, devices[], note) ; empty = no device touched */
@@ -1631,67 +1587,68 @@ if(entrySeg){
   const skip = (tag,name,note)=>({tag,name,devs:[],note,empty:true});
 
   const ROLES = [
-    { tag:'A', name:'Visitor Walk-in', sub:'มาเอง ไม่ได้นัด', cps:[
+    { tag:'A', name:'Visitor Walk-in', alt:'Visitor EV Walk-in', sub:'มาเอง ไม่ได้นัด · EV = จอดจ่ายเงิน', cps:[
       skip('CP0','ก่อนมา','ไม่ได้ลงทะเบียนล่วงหน้า'),
-      cp('CP1','เข้า',['kiosk','lineoa','guard','barrier'],'ลงทะเบียนที่ป้อม — โชว์หน้า/โชว์บัตรกับ Line OA แล้ว <b>รปภ ตรวจ</b>'),
-      cp('CP2','ระหว่างอยู่',['lineoa'],'ติดตามสถานะผ่าน Line OA'),
-      cp('CP3','ออก',['lpr','guard','barrier'],'LPR + <b>รปภ ยืนยันขาออก</b>')
+      cp('CP1','เข้า',['bluetooth','lineoa','beacon','/','kiosk','agent','*','lpr','guard']),
+      cp('CP2','ระหว่างอยู่',['lineoa','estamp']),
+      cp('CP3','ออก',['qr','lpr','*','guard'])
     ]},
-    { tag:'B', name:'Visitor Register', sub:'จองล่วงหน้า · เยี่ยม/ช่าง/นิติ/ส่งของ/อาหาร', cps:[
-      cp('CP0','ก่อนมา',['webapp','lineoa'],'<b>host สร้าง invite</b> + ผู้มาลงทะเบียนรถ'),
-      cp('CP1','เข้า',['beacon','lpr','barrier'],'เปิด Bluetooth ที่ป้อม → Beacon+LPR <b>เปิดไม้กั้นเอง</b>'),
-      cp('CP2','ระหว่างอยู่',['lineoa'],'ติดตามสถานะผ่าน Line OA'),
-      cp('CP3','ออก',['lpr','guard','barrier'],'LPR + รปภ ยืนยันขาออก')
+    { tag:'B', name:'Visitor Register', alt:'Visitor EV Register', sub:'จองล่วงหน้า · EV = จอดจ่ายเงิน', cps:[
+      cp('CP0','ก่อนมา',['lineoa','webapp']),
+      cp('CP1','เข้า',['lpr','*','guard']),
+      cp('CP2','ระหว่างอยู่',['lineoa','estamp']),
+      cp('CP3','ออก',['lineoa','qr','lpr','*','guard'])
     ]},
-    { tag:'C', name:'Visitor EV Walk-in', sub:'จอดจ่ายเงินชั่วคราว · ไม่ได้นัด', cps:[
-      skip('CP0','ก่อนมา','ไม่ได้ลงทะเบียนล่วงหน้า'),
-      cp('CP1','เข้า',['kiosk','lineoa','lpr','guard','barrier'],'ลงทะเบียนหน้างาน + <b>เลือกช่องจอด EV</b>'),
-      cp('CP2','ระหว่างอยู่',['lineoa'],'ทำธุระ + <b>รับ e-stamp</b> ผ่าน Line OA'),
-      cp('CP3','ออก',['lpr','guard','qr','barrier'],'<b>จ่ายค่าจอด</b> (หักส่วนลด e-stamp) + รับ receipt')
+    { tag:'C', name:'Internal / กึ่ง Internal', alt:'Internal EV', sub:'ลูกบ้าน·จนท.·ผู้เช่า·แม่บ้าน·รปภ · ใช้ซ้ำ', cps:[
+      cp('CP0','ก่อนมา',['bio','webapp','lineoa']),
+      cp('CP1','เข้า',['lpr','*','guard']),
+      cp('CP2','ระหว่างอยู่',['lineoa','estamp']),
+      cp('CP3','ออก',['lineoa','qr','lpr','*','guard'])
     ]},
-    { tag:'D', name:'Visitor EV Register', sub:'นัด + จอดจ่ายเงิน', cps:[
-      cp('CP0','ก่อนมา',['webapp','lineoa'],'invite จาก host + ลงทะเบียนรถ'),
-      cp('CP1','เข้า',['beacon','lpr','barrier'],'auto ผ่าน Beacon+LPR + เลือกช่อง EV'),
-      cp('CP2','ระหว่างอยู่',['lineoa'],'รับ e-stamp ผ่าน Line OA'),
-      cp('CP3','ออก',['lpr','qr','barrier'],'<b>QR จ่าย</b> (หัก e-stamp) + receipt')
+    { tag:'D', name:'User', sub:'Visitor EV ที่ใช้ซ้ำ · รายเดือน · ค้างคืน', cps:[
+      cp('CP0','ก่อนมา',['bio','lineoa']),
+      cp('CP1','เข้า',['lpr']),
+      cp('CP2','ระหว่างอยู่',['lineoa','estamp']),
+      cp('CP3','ออก',['qr','lpr'])
     ]},
-    { tag:'E', name:'Internal / กึ่ง Internal', sub:'ลูกบ้าน·จนท.·ผู้เช่า·แม่บ้าน·รปภ·ซ่อมระยะยาว', cps:[
-      cp('CP0','ผูกตัวตน',['bio','lineoa'],'<b>ทำครั้งเดียว</b> — ยืนยันบัตรครั้งแรก แล้วผูก Bio + Line OA'),
-      cp('CP1','เข้า',['beacon','lpr','barrier'],'auto ทุกครั้ง — <b>ไม่ต้อง verify ซ้ำ</b>'),
-      skip('CP2','ระหว่างอยู่','อยู่ประจำ — ไม่มีขั้นตอนเพิ่ม'),
-      cp('CP3','ออก',['lpr','barrier'],'ออกอัตโนมัติ — ไม่จ่าย / เหมารายเดือน')
+    { tag:'E', name:'แขกรับเชิญ', sub:'host เชิญผ่าน Line OA · มาโชว์ที่ป้อม', cps:[
+      cp('CP0','ก่อนมา',['lineoa']),
+      cp('CP1','เข้า',['lineoa','*','guard']),
+      cp('CP2','ระหว่างอยู่',['lineoa']),
+      cp('CP3','ออก',['*','guard'])
     ]},
-    { tag:'F', name:'User EV', sub:'Visitor EV ที่ใช้ซ้ำ · รายเดือน · ค้างคืน', cps:[
-      cp('CP0','ผูกบัญชี',['bio','lineoa'],'ผูกบัญชี EV ครั้งแรก (Bio + Line OA)'),
-      cp('CP1','เข้า',['lpr','barrier'],'<b>LPR เปิดเอง</b> + เข้าช่องจอด EV'),
-      cp('CP2','ระหว่างอยู่',['lineoa'],'รับ e-stamp ผ่าน Line OA'),
-      cp('CP3','ออก',['lpr','qr','barrier'],'<b>หักรายเดือน / QR</b> + receipt')
-    ]},
-    { tag:'G', name:'Motorcycle', sub:'มอเตอร์ไซค์ส่งของ · ได้สิทธิ์ invite', cps:[
-      cp('CP0','ก่อนมา',['lineoa'],'<b>รับ invite จาก host</b> ผ่าน Line OA'),
-      cp('CP1','เข้า',['lineoa','guard','barrier'],'โชว์ Line OA — <b>รปภ ตรวจที่ป้อม</b>'),
+    { tag:'F', name:'Motorcycle', sub:'มอเตอร์ไซค์ส่งของ · ได้สิทธิ์ invite', cps:[
+      cp('CP0','ก่อนมา',['lineoa']),
+      cp('CP1','เข้า',['lineoa','*','guard']),
       skip('CP2','ระหว่างอยู่','ส่งของ — ผ่านเร็ว'),
-      cp('CP3','ออก',['guard','barrier'],'รปภ ยืนยันขาออก')
+      cp('CP3','ออก',['*','guard'])
     ]}
   ];
 
-  function chip(k){ const d=DEV[k]||[k,'']; return '<span class="dchip '+d[1]+'">'+d[0]+'</span>'; }
+  function chip(k){
+    if(k==='/') return '<span class="cp-sep">/</span>';
+    if(k==='*') return '<span class="cp-star">*</span>';
+    const d=DEV[k]||[k,''];
+    return '<span class="dchip '+d[1]+'">'+d[0]+'</span>';
+  }
 
   function render(role){
-    cpFlow.innerHTML = role.cps.map(c=>{
+    const head = '<div class="flow-head"><span class="flow-tag">'+role.name+'</span>'+
+      (role.alt ? '<span class="flow-tag alt">'+role.alt+'</span>' : '')+'</div>';
+    const cards = role.cps.map(c=>{
       const body = c.empty
         ? '<div class="cp-empty">'+c.note+'</div>'
-        : '<div class="cp-devs">'+c.devs.map(chip).join('')+'</div>'+
-          (c.note ? '<div class="cp-note">'+c.note+'</div>' : '');
+        : '<div class="cp-devs">'+c.devs.map(chip).join('')+'</div>';
       return '<div class="cp-card'+(c.empty?' muted':'')+'">'+
         '<div class="cp-side"><span class="cp-tag">'+c.tag+'</span><span class="cp-name">'+c.name+'</span></div>'+
         '<div class="cp-body">'+body+'</div></div>';
     }).join('');
+    cpFlow.innerHTML = head + cards;
   }
 
   roleSeg.innerHTML = ROLES.map((r,i)=>
     '<button data-i="'+i+'"'+(i===0?' class="on"':'')+'>'+
-      '<span class="rs-tag">'+r.tag+'</span><span class="rs-name">'+r.name+'</span>'+
+      '<span class="rs-tag">'+r.tag+'</span><span class="rs-name">'+r.name+(r.alt?' · '+r.alt:'')+'</span>'+
       '<span class="rs-sub">'+r.sub+'</span></button>'
   ).join('');
 
