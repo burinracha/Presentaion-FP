@@ -497,6 +497,68 @@ body {
 @keyframes pf-caret { 50% { opacity: 0; } }
 
 /* ============================================================
+   ROLE × DEVICE CHECKPOINT MATRIX (slide — Visitor flows)
+   ============================================================ */
+.dev-legend {
+  display: flex; flex-wrap: wrap; gap: 8px 18px;
+  padding: 12px 16px; margin-bottom: 18px;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
+}
+.dev-legend .dl-zone { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-soft); }
+.dev-legend .dl-zone b { color: var(--ink); font-family: var(--font-display); font-weight: 600; }
+.dl-dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.dl-dot.personal { background: var(--accent); }
+.dl-dot.booth { background: var(--gold); }
+.dl-dot.lane { background: var(--teal); }
+
+/* role selector — wraps, shows tag + name + sub */
+.role-seg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.role-seg button {
+  border: 1px solid var(--rule); background: var(--paper); cursor: pointer;
+  border-radius: 10px; padding: 8px 13px; text-align: left;
+  font-family: var(--font-thai); transition: all .15s; line-height: 1.25;
+}
+.role-seg button:hover { border-color: var(--rule-strong); }
+.role-seg button.on { border-color: var(--accent); background: var(--accent-bg); box-shadow: inset 0 0 0 1px var(--accent); }
+.role-seg .rs-tag { font-family: var(--font-display); font-weight: 700; font-size: 12px; color: var(--accent); margin-right: 6px; }
+.role-seg .rs-name { font-family: var(--font-display); font-weight: 600; font-size: 13.5px; color: var(--ink); }
+.role-seg .rs-sub { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+
+/* checkpoint flow cards */
+.cp-flow { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+.cp-card {
+  display: grid; grid-template-columns: 138px 1fr;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden;
+  animation: slideIn .25s ease;
+}
+.cp-card.muted { opacity: .62; }
+.cp-side { background: var(--bg); border-right: 1px solid var(--rule); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.cp-tag { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent); }
+.cp-name { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--ink); }
+.cp-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.cp-devs { display: flex; flex-wrap: wrap; gap: 6px; }
+.dchip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-display); font-weight: 600; font-size: 12.5px;
+  padding: 5px 11px; border-radius: 999px;
+  background: var(--bg); border: 1px solid var(--rule); color: var(--ink);
+}
+.dchip::before { content: ""; width: 8px; height: 8px; border-radius: 2px; flex: none; background: var(--rule-strong); }
+.dchip.personal { background: var(--accent-bg); border-color: #bcd4f5; color: var(--accent-hot); }
+.dchip.personal::before { background: var(--accent); }
+.dchip.booth { background: var(--gold-bg); border-color: #e8d5a0; color: #8a6d14; }
+.dchip.booth::before { background: var(--gold); }
+.dchip.lane { background: var(--teal-bg); border-color: #b8e0d9; color: var(--teal); }
+.dchip.lane::before { background: var(--teal); }
+.cp-note { font-size: 12.5px; color: var(--ink-soft); }
+.cp-note b { color: var(--ink); }
+.cp-empty { font-size: 12.5px; color: var(--ink-faint); font-style: italic; }
+@media (max-width: 560px) {
+  .cp-card { grid-template-columns: 1fr; }
+  .cp-side { border-right: none; border-bottom: 1px solid var(--rule); flex-direction: row; gap: 8px; align-items: baseline; }
+}
+
+/* ============================================================
    MAP SECTION STYLES (reused from original — kept for slide 0)
    ============================================================ */
 .map-legend {
@@ -761,36 +823,41 @@ ul.tree ul { margin-left: 9px; }
       </div>
     </div>
 
-    <div class="sb-chapter">I · ผังรวมระบบ</div>
+    <div class="sb-chapter">I · Visitor &amp; อุปกรณ์</div>
     <button class="sb-item active" data-slide="0">
+      <span class="sn">7</span> Role × อุปกรณ์ (Check Point)
+    </button>
+
+    <div class="sb-chapter">II · ผังรวมระบบ</div>
+    <button class="sb-item" data-slide="1">
       <span class="sn">0</span> โครงสร้างทั้งระบบ
     </button>
 
-    <div class="sb-chapter">II · ขั้นตอนตั้งค่า</div>
-    <button class="sb-item" data-slide="1">
+    <div class="sb-chapter">III · ขั้นตอนตั้งค่า</div>
+    <button class="sb-item" data-slide="2">
       <span class="sn">1</span> Admin ผู้ดูแลระบบทั้งหมด
     </button>
-    <button class="sb-item" data-slide="2">
+    <button class="sb-item" data-slide="3">
       <span class="sn">2</span> เพิ่มหมู่บ้าน + สาขา
     </button>
-    <button class="sb-item" data-slide="3">
+    <button class="sb-item" data-slide="4">
       <span class="sn">2.5</span> เพิ่ม Admin สาขา
     </button>
-    <button class="sb-item" data-slide="4">
+    <button class="sb-item" data-slide="5">
       <span class="sn">3</span> สร้าง Role + รับ Code
     </button>
-    <button class="sb-item" data-slide="5">
+    <button class="sb-item" data-slide="6">
       <span class="sn">3.5</span> ตรวจ Code ด้วย Checksum
     </button>
-    <button class="sb-item" data-slide="6">
+    <button class="sb-item" data-slide="7">
       <span class="sn">4</span> Sync Action
     </button>
-    <button class="sb-item" data-slide="7">
+    <button class="sb-item" data-slide="8">
       <span class="sn">5</span> หน้า App รปภ
     </button>
 
-    <div class="sb-chapter">III · หน้าแอปพลิเคชัน</div>
-    <button class="sb-item" data-slide="8">
+    <div class="sb-chapter">IV · หน้าแอปพลิเคชัน</div>
+    <button class="sb-item" data-slide="9">
       <span class="sn">6</span> สแกน &amp; บันทึก Log
     </button>
 
@@ -815,8 +882,35 @@ ul.tree ul { margin-left: 9px; }
 
     <div class="pres-slides" id="slidesContainer">
 
-      <!-- ===== SLIDE 0 — MAP ===== -->
+      <!-- ===== SLIDE 0 — ROLE × DEVICE CHECKPOINT ===== -->
       <div class="pres-slide active" data-index="0">
+        <div class="slide-inner">
+          <div class="step-badge">
+            <div class="step-num teal">7</div>
+            <span class="step-label teal">Visitor · อุปกรณ์ที่แต่ละ Role แตะ</span>
+          </div>
+          <h2 class="slide-title">ใครเจออุปกรณ์อะไร — ไล่ตาม Check Point</h2>
+          <p class="slide-desc">เลือกกลุ่มผู้มาเยือนด้านล่าง ระบบจะไล่ให้ดูว่าตั้งแต่ <b>ก่อนมาถึง → เข้า → ระหว่างอยู่ → ออก</b> เขาต้อง interact กับ <span class="hl">อุปกรณ์</span> ตัวไหนบ้าง — สีของชิปบอกว่าอุปกรณ์อยู่โซนไหน</p>
+
+          <div class="dev-legend">
+            <span class="dl-zone"><span class="dl-dot personal"></span> <b>มือถือผู้มาเยือน</b> · Line OA · Beacon · Bio · Web/App</span>
+            <span class="dl-zone"><span class="dl-dot booth"></span> <b>จุดบริการ/ป้อม</b> · Kiosk · Render · อุปกรณ์ รปภ</span>
+            <span class="dl-zone"><span class="dl-dot lane"></span> <b>ช่องทางรถ</b> · LPR · ไม้กั้น · QR จ่ายเงิน</span>
+          </div>
+
+          <div class="role-seg" id="roleSeg"></div>
+          <div class="cp-flow" id="cpFlow"></div>
+
+          <ul class="feat-list">
+            <li><span class="fi">✓</span><span><b>ต่างกันแค่ 3 แกน</b> — Walk-in vs จองล่วงหน้า · EV (จ่ายเงิน) vs ไม่ EV · Visitor (ครั้งเดียว) vs Internal/User (ใช้ซ้ำ)</span></li>
+            <li><span class="fi">✓</span><span><b>จองล่วงหน้า = แตะอุปกรณ์น้อยลง</b> — ผ่าน Beacon + LPR อัตโนมัติ ไม่ต้องลงทะเบียนที่ป้อม</span></li>
+            <li><span class="fi">✓</span><span><b>Handheld กับ Tablet ทำงานเดียวกัน</b> — รปภ ใช้ verify ข้อมูลจาก LPR จึงรวมเป็น "อุปกรณ์ รปภ" ตัวเดียว</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 1 — MAP ===== -->
+      <div class="pres-slide" data-index="1">
         <div class="slide-inner wide">
           <div class="step-badge">
             <div class="step-num">0</div>
@@ -860,8 +954,8 @@ ul.tree ul { margin-left: 9px; }
         </div>
       </div>
 
-      <!-- ===== SLIDE 1 — STEP 1: Admin ทั้งหมด ===== -->
-      <div class="pres-slide" data-index="1">
+      <!-- ===== SLIDE 2 — STEP 1: Admin ทั้งหมด ===== -->
+      <div class="pres-slide" data-index="2">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num">1</div>
@@ -882,8 +976,8 @@ ul.tree ul { margin-left: 9px; }
         </div>
       </div>
 
-      <!-- ===== SLIDE 2 — STEP 2: เพิ่มหมู่บ้าน + สาขา ===== -->
-      <div class="pres-slide" data-index="2">
+      <!-- ===== SLIDE 3 — STEP 2: เพิ่มหมู่บ้าน + สาขา ===== -->
+      <div class="pres-slide" data-index="3">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num">2</div>
@@ -920,7 +1014,7 @@ ul.tree ul { margin-left: 9px; }
       </div>
 
       <!-- ===== SLIDE 3 — STEP 2.5: เพิ่ม Admin สาขา ===== -->
-      <div class="pres-slide" data-index="3">
+      <div class="pres-slide" data-index="4">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num teal">2.5</div>
@@ -942,7 +1036,7 @@ ul.tree ul { margin-left: 9px; }
       </div>
 
       <!-- ===== SLIDE 4 — STEP 3: Role + Code ===== -->
-      <div class="pres-slide" data-index="4">
+      <div class="pres-slide" data-index="5">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num">3</div>
@@ -971,7 +1065,7 @@ ul.tree ul { margin-left: 9px; }
       </div>
 
       <!-- ===== SLIDE 5 — STEP 3.5: เอา Code ไปเช็คด้วย Checksum ===== -->
-      <div class="pres-slide" data-index="5">
+      <div class="pres-slide" data-index="6">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num teal">3.5</div>
@@ -1004,7 +1098,7 @@ ul.tree ul { margin-left: 9px; }
       </div>
 
       <!-- ===== SLIDE 6 — STEP 4: Sync Action ===== -->
-      <div class="pres-slide" data-index="6">
+      <div class="pres-slide" data-index="7">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num">4</div>
@@ -1033,7 +1127,7 @@ ul.tree ul { margin-left: 9px; }
       </div>
 
       <!-- ===== SLIDE 7 — STEP 5: App รปภ ===== -->
-      <div class="pres-slide" data-index="7">
+      <div class="pres-slide" data-index="8">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num gold">5</div>
@@ -1077,7 +1171,7 @@ ul.tree ul { margin-left: 9px; }
       </div>
 
       <!-- ===== SLIDE 8 — STEP 6: LPR อ่านป้าย → เปิดอัตโนมัติ ===== -->
-      <div class="pres-slide" data-index="8">
+      <div class="pres-slide" data-index="9">
         <div class="slide-inner">
           <div class="step-badge">
             <div class="step-num gold">6</div>
@@ -1249,6 +1343,7 @@ const sidebar = document.getElementById('sidebar');
 const scroller = document.getElementById('slidesContainer');
 
 const slideTitles = [
+  'Step 7 · Role × อุปกรณ์ (Check Point)',
   'โครงสร้างทั้งระบบ',
   'Step 1 · Admin ผู้ดูแลระบบ',
   'Step 2 · เพิ่มหมู่บ้าน + สาขา',
@@ -1507,6 +1602,107 @@ if(entrySeg){
     if(scanFlowLabel) scanFlowLabel.textContent = mode==='car' ? 'สแกนป้ายทะเบียน' : 'สแกนบัตร ปชช.';
   });
 }
+
+/* ============================================================
+   SLIDE 9 — ROLE × DEVICE CHECKPOINT MATRIX
+   (data is the source of truth — edit ROLES to change everything)
+   ============================================================ */
+(function(){
+  const roleSeg = document.getElementById('roleSeg');
+  const cpFlow  = document.getElementById('cpFlow');
+  if(!roleSeg || !cpFlow) return;
+
+  /* device dictionary: key -> [label, zone]. zone drives chip color */
+  const DEV = {
+    lineoa: ['Line OA', 'personal'],
+    beacon: ['Line Beacon', 'personal'],
+    bio:    ['Biometrics', 'personal'],
+    webapp: ['Web/App จอง·invite', 'personal'],
+    kiosk:  ['Kiosk', 'booth'],
+    render: ['Render จอแสดงผล', 'booth'],
+    guard:  ['อุปกรณ์ รปภ (Handheld/Tablet)', 'booth'],
+    lpr:    ['LPR ป้ายทะเบียน', 'lane'],
+    barrier:['ไม้กั้น', 'lane'],
+    qr:     ['QR จ่ายเงิน', 'lane']
+  };
+
+  /* checkpoint helper: cp(tag, name, devices[], note) ; empty = no device touched */
+  const cp = (tag,name,devs,note)=>({tag,name,devs,note});
+  const skip = (tag,name,note)=>({tag,name,devs:[],note,empty:true});
+
+  const ROLES = [
+    { tag:'A', name:'Visitor Walk-in', sub:'มาเอง ไม่ได้นัด', cps:[
+      skip('CP0','ก่อนมา','ไม่ได้ลงทะเบียนล่วงหน้า'),
+      cp('CP1','เข้า',['kiosk','lineoa','guard','barrier'],'ลงทะเบียนที่ป้อม — โชว์หน้า/โชว์บัตรกับ Line OA แล้ว <b>รปภ ตรวจ</b>'),
+      cp('CP2','ระหว่างอยู่',['lineoa'],'ติดตามสถานะผ่าน Line OA'),
+      cp('CP3','ออก',['lpr','guard','barrier'],'LPR + <b>รปภ ยืนยันขาออก</b>')
+    ]},
+    { tag:'B', name:'Visitor Register', sub:'จองล่วงหน้า · เยี่ยม/ช่าง/นิติ/ส่งของ/อาหาร', cps:[
+      cp('CP0','ก่อนมา',['webapp','lineoa'],'<b>host สร้าง invite</b> + ผู้มาลงทะเบียนรถ'),
+      cp('CP1','เข้า',['beacon','lpr','barrier'],'เปิด Bluetooth ที่ป้อม → Beacon+LPR <b>เปิดไม้กั้นเอง</b>'),
+      cp('CP2','ระหว่างอยู่',['lineoa'],'ติดตามสถานะผ่าน Line OA'),
+      cp('CP3','ออก',['lpr','guard','barrier'],'LPR + รปภ ยืนยันขาออก')
+    ]},
+    { tag:'C', name:'Visitor EV Walk-in', sub:'จอดจ่ายเงินชั่วคราว · ไม่ได้นัด', cps:[
+      skip('CP0','ก่อนมา','ไม่ได้ลงทะเบียนล่วงหน้า'),
+      cp('CP1','เข้า',['kiosk','lineoa','lpr','guard','barrier'],'ลงทะเบียนหน้างาน + <b>เลือกช่องจอด EV</b>'),
+      cp('CP2','ระหว่างอยู่',['lineoa'],'ทำธุระ + <b>รับ e-stamp</b> ผ่าน Line OA'),
+      cp('CP3','ออก',['lpr','guard','qr','barrier'],'<b>จ่ายค่าจอด</b> (หักส่วนลด e-stamp) + รับ receipt')
+    ]},
+    { tag:'D', name:'Visitor EV Register', sub:'นัด + จอดจ่ายเงิน', cps:[
+      cp('CP0','ก่อนมา',['webapp','lineoa'],'invite จาก host + ลงทะเบียนรถ'),
+      cp('CP1','เข้า',['beacon','lpr','barrier'],'auto ผ่าน Beacon+LPR + เลือกช่อง EV'),
+      cp('CP2','ระหว่างอยู่',['lineoa'],'รับ e-stamp ผ่าน Line OA'),
+      cp('CP3','ออก',['lpr','qr','barrier'],'<b>QR จ่าย</b> (หัก e-stamp) + receipt')
+    ]},
+    { tag:'E', name:'Internal / กึ่ง Internal', sub:'ลูกบ้าน·จนท.·ผู้เช่า·แม่บ้าน·รปภ·ซ่อมระยะยาว', cps:[
+      cp('CP0','ผูกตัวตน',['bio','lineoa'],'<b>ทำครั้งเดียว</b> — ยืนยันบัตรครั้งแรก แล้วผูก Bio + Line OA'),
+      cp('CP1','เข้า',['beacon','lpr','barrier'],'auto ทุกครั้ง — <b>ไม่ต้อง verify ซ้ำ</b>'),
+      skip('CP2','ระหว่างอยู่','อยู่ประจำ — ไม่มีขั้นตอนเพิ่ม'),
+      cp('CP3','ออก',['lpr','barrier'],'ออกอัตโนมัติ — ไม่จ่าย / เหมารายเดือน')
+    ]},
+    { tag:'F', name:'User EV', sub:'Visitor EV ที่ใช้ซ้ำ · รายเดือน · ค้างคืน', cps:[
+      cp('CP0','ผูกบัญชี',['bio','lineoa'],'ผูกบัญชี EV ครั้งแรก (Bio + Line OA)'),
+      cp('CP1','เข้า',['lpr','barrier'],'<b>LPR เปิดเอง</b> + เข้าช่องจอด EV'),
+      cp('CP2','ระหว่างอยู่',['lineoa'],'รับ e-stamp ผ่าน Line OA'),
+      cp('CP3','ออก',['lpr','qr','barrier'],'<b>หักรายเดือน / QR</b> + receipt')
+    ]},
+    { tag:'G', name:'Motorcycle', sub:'มอเตอร์ไซค์ส่งของ · ได้สิทธิ์ invite', cps:[
+      cp('CP0','ก่อนมา',['lineoa'],'<b>รับ invite จาก host</b> ผ่าน Line OA'),
+      cp('CP1','เข้า',['lineoa','guard','barrier'],'โชว์ Line OA — <b>รปภ ตรวจที่ป้อม</b>'),
+      skip('CP2','ระหว่างอยู่','ส่งของ — ผ่านเร็ว'),
+      cp('CP3','ออก',['guard','barrier'],'รปภ ยืนยันขาออก')
+    ]}
+  ];
+
+  function chip(k){ const d=DEV[k]||[k,'']; return '<span class="dchip '+d[1]+'">'+d[0]+'</span>'; }
+
+  function render(role){
+    cpFlow.innerHTML = role.cps.map(c=>{
+      const body = c.empty
+        ? '<div class="cp-empty">'+c.note+'</div>'
+        : '<div class="cp-devs">'+c.devs.map(chip).join('')+'</div>'+
+          (c.note ? '<div class="cp-note">'+c.note+'</div>' : '');
+      return '<div class="cp-card'+(c.empty?' muted':'')+'">'+
+        '<div class="cp-side"><span class="cp-tag">'+c.tag+'</span><span class="cp-name">'+c.name+'</span></div>'+
+        '<div class="cp-body">'+body+'</div></div>';
+    }).join('');
+  }
+
+  roleSeg.innerHTML = ROLES.map((r,i)=>
+    '<button data-i="'+i+'"'+(i===0?' class="on"':'')+'>'+
+      '<span class="rs-tag">'+r.tag+'</span><span class="rs-name">'+r.name+'</span>'+
+      '<span class="rs-sub">'+r.sub+'</span></button>'
+  ).join('');
+
+  roleSeg.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-i]'); if(!b) return;
+    roleSeg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    render(ROLES[+b.dataset.i]);
+  });
+
+  render(ROLES[0]);
+})();
 
 /* ---------- expand / collapse all ---------- */
 document.getElementById('expandAll').addEventListener('click',()=>treeRoot.querySelectorAll('li').forEach(li=>li.classList.remove('collapsed')));
